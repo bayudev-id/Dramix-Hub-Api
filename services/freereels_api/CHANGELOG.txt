@@ -1,0 +1,525 @@
+# FreeReels API Client - Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.10.0] - 2026-10-05
+
+### Production API Server Enhancements
+
+#### New Endpoints
+- `GET /drama/info_v2?series_id=xxx&scene=1` - Drama detail information
+- `POST /search/drama` - Search dramas by keyword (returns `name`/`id` fields)
+  - **Limitation:** Pagination NOT supported by upstream API
+  - Always returns first 20 results regardless of `offset`, `page`, or `page_size` parameters
+  - Tested: offset=0, offset=20, page=2 all return identical 20 items
+- `POST /homepage/v2/tab/feed` - Direct proxy endpoint for playground compatibility
+
+#### Tab System Overhaul
+- **Breaking:** Replaced `tab_key` with `module_key` for all feed tabs (except 622 Segera Hadir)
+- Tab names changed to clean Indonesian labels (removed upstream Chinese campaign names)
+- Added 4 ranking tabs: Harian (daily), Mingguan (weekly), Bulanan (monthly), Tahunan (annually)
+- Mapping:
+  - Populer: `module_key: "1036"`
+  - New: `module_key: "1040"`
+  - Dubbing: `module_key: "1065"`
+  - Perempuan: `module_key: "1039"`
+  - Laki-Laki: `module_key: "1041"`
+  - Anime: `module_key: "2204"`
+  - Segera hadir: `tab_key: "622"` (unchanged, uses `/tab/index`)
+  - Ranking tabs: `ranking_id: "daily"|"weekly"|"monthly"|"annually"`
+
+#### Feed Filtering
+- Automatic removal of ranking card items (`item_type: "card"`) from `/api/feed` and `/homepage/v2/tab/feed` responses
+- Clean drama-only feeds without navigation cards
+
+#### Performance
+- Parallel module name fetching removed (eliminated slow upstream requests)
+- Session reuse for all client operations
+- Response time: instant (no background fetches)
+
+#### Frida Hooks
+- `hook_count_all_tabs_v2.js` - Universal drama counter with deduplication
+- Auto-detects flat items, nested items, and pagination info
+- Tracks session totals per tab/module
+
+#### Configuration
+- Default port: 7406
+- Server: `http://localhost:7406`
+
+#### Bug Fixes
+- Fixed `get_client()` import path (`freereels_client` from `src/`)
+- Fixed kategori 622 (Segera hadir) structure: 241 items via `/tab/index` (no pagination)
+- Fixed session reuse preventing unlimited pagination exploit
+
+---
+
+## [1.9.0] - 2026-10-05
+
+### Architecture Refactor - Proxy v3
+- Replaced over-engineered proxy v2 with simplified Proxy v3 architecture
+- **Design:** Proxy is now a thin HTTP wrapper around `FreeReelsClient`, eliminating duplicate auth/session logic
+- Endpoints:
+  - `POST /api/feed`: Category feeds with offset pagination and clean feed option
+  - `POST /api/ranking`: Ranking leaderboards (daily/weekly/monthly)
+  - `GET /`: Clean, modern playground dashboard
+- **Verified:** Kategori New (1040) pagination works via proxy:
+  - Page 1 (offset=0): 10 dramas
+  - Page 2 (offset=10): 7 dramas
+  - Total: 17 dramas across 2 pages
+- Single source of truth: `FreeReelsClient` handles all network, auth, and pagination logic
+
+---
+
+## [1.8.3] - 2026-10-05
+
+### Verified - Kategori New (1040) Pagination
+- Kategori New pagination verified working using `FreeReelsClient`:
+  - Page 1 (offset=0): 10 dramas
+  - Page 2 (offset=10): 7 dramas
+  - Total: 17 dramas available
+- Clean feed option removes navigation/header cards properly
+- Direct client (`FreeReelsClient`) handles pagination stably with session management
+
+### Recommended Usage
+Use `FreeReelsClient` directly:
+```python
+from freereels_client import FreeReelsClient
+client = FreeReelsClient()
+client.login_anonymous()
+
+# Fetch all dramas from New category
+p1 = client.get_tab_feed(module_key="1040", offset=0, clean=True)   # 10 dramas
+p2 = client.get_tab_feed(module_key="1040", offset=10, clean=True)  # 7 dramas
+all_new_dramas = p1 + p2  # 17 dramas
+```
+
+---
+
+## [1.8.2] - 2026-10-05
+
+### Added
+- Added OAuth session token caching in proxy server (`state.is_session_valid()`, 1-hour expiry).
+- Proxy now reuses active guest session across requests instead of generating a new anonymous user token every time.
+
+## [1.8.1] - 2026-10-05
+
+### Fixed
+- Fixed `/api/feed/clean` data cleansing bug: FreeReels response nests items under `data.data.items`, not `data.items`. The previous check was silently bypassed.
+- Added comprehensive navigation card detector: checks `item_type == 'card'`, `title == 'Top'`, and `module_card.tab_list` while preserving genuine drama items.
+- Added auto-cleansing in `/api/test` for any `tab/feed` requests in playground.
+- Added `get_tab_feed(module_key, offset, clean)` helper method to `FreeReelsClient` in `src/freereels_client.py` and `production/core/client.py`.
+
+## [1.8.0] - 2026-10-05
+
+### Added
+- Added `/api/feed/clean` endpoint to filter out navigation/header ranking cards (`item_type: card`) from homepage tab feeds.
+- Enhanced playground UI to support POST bodies for custom `/api/*` endpoints.
+
+## [1.7.0] - 2026-10-05
+
+### Added
+- Ranking leaderboard endpoint `POST /frv2-api/homepage/v2/rank` with payload `{"key": "daily|weekly|monthly|annually"}`.
+- Added Top 20 ranking UI card with interactive filter buttons in playground.
+- Added `get_ranking()` to `FreeReelsClient`.
+
+## [1.6.0] - 2026-10-05
+
+### Added
+- Discovered and verified feed pagination endpoint `POST /frv2-api/homepage/v2/tab/feed` using dynamic payload (`next`, `user_new_theater`, `module_key`).
+- Mapped all category `module_key`s: Popular (1036), Perempuan (1039), New (1040), Laki-Laki (1041), Dubbing (1065), Anime (2204), Segera Hadir (1238).
+
+## [1.5.0] - 2026-10-04
+
+### Production Packaging
+- Created standalone `production/` folder ready for deployment to miniPC/server
+- Clean modular structure:
+  - `production/core/`: `client.py` (FreeReelsClient), `auth.py` (OAuthSigner)
+  - `production/api/`: `proxy.py` (FastAPI proxy with web dashboard playground)
+  - `production/config/`: `settings.py` (centralized endpoints, languages, keys)
+  - `production/docs/`: `CHANGELOG.txt`
+  - `production/scripts/`: `test_setup.py` (verification script)
+  - `production/run_proxy.py`: Standalone entry point
+  - `production/requirements.txt`: Minimal runtime dependencies
+  - `production/README.md`: Complete deployment guide for miniPC
+- Verified with `test_setup.py`: anonymous login, OAuth signing, and API request all pass
+
+## [1.4.2] - 2026-10-04
+
+### Fixed
+- Fixed unclickable "Search Drama" and "Suggestions" buttons in playground
+- Escaped double quotes in button `onclick` attributes using HTML entities (`&quot;`)
+- Buttons now properly set method (POST), endpoint, and JSON payload in form fields
+
+## [1.4.1] - 2026-10-04
+
+### Fixed
+- Search Drama & Suggestions POST endpoints now work in playground
+- Frontend JSON body parsing: convert JSON string to object before sending to `/api/test`
+- Backend Pydantic model properly receives Dict body instead of raw string
+
+## [1.4.0] - 2026-10-04
+
+### UI Updates: Search Endpoints
+- Added new "Search" card in sidebar with 5 dedicated buttons:
+  - **Hot Words**: `GET /search/hot_words`
+  - **Trending**: `GET /search/trending_searches`
+  - **Audio Tabs**: `GET /search/audio-tabs`
+  - **Search Drama**: `POST /search/drama` with payload `{"keyword": "love", "type": "drama"}`
+  - **Suggestions**: `POST /search/suggestion` with payload `{"keyword": "rom"}`
+
+## [1.3.1] - 2026-10-04
+
+### Fixed
+- UI playground now correctly fetches custom `/api/*` endpoints without `/frv2-api` prefix
+- Tombol "Tabs + Anime" sekarang berfungsi dan return 7 tabs
+
+## [1.3.0] - 2026-10-04
+
+### Custom API Endpoint
+- Added `/api/tabs/complete` endpoint: tab list dengan anime (547) injected
+  - Fetch original 6 tabs dari server
+  - Tambahkan anime tab yang tersembunyi
+  - Return combined list (7 tabs total)
+- Tombol "Tabs + Anime" di UI playground untuk test endpoint baru
+
+### Note
+- Anime (547) endpoint valid tapi tidak di-publish oleh server di `/homepage/v2/tab/list`
+- Custom endpoint ini hanya di proxy (bukan modifikasi server asli)
+
+## [1.2.2] - 2026-10-04
+
+### UI Updates
+- Added Anime (547) category button to playground
+- Now 7 categories total: Popular, Perempuan, New, Laki-Laki, Dubbing, Anime, Segera Hadir
+- Updated both proxy UIs for consistency
+
+## [1.2.1] - 2026-10-04
+
+### UI Updates
+- Updated API proxy playground UI with all 6 discovered categories:
+  - Added Perempuan (504) button
+  - Added Laki-Laki (506) button
+  - Added Segera Hadir (622) button (large dataset preview)
+  - Added "All Tabs List" endpoint button
+- Updated both `api_proxy.py` and `api_proxy_v2.py` for consistency
+- Server running at http://localhost:8000 with live category buttons
+
+## [1.2.0] - 2026-10-04
+
+### Added
+- **Complete Homepage Category Discovery**: Found `/homepage/v2/tab/list` endpoint
+  - Returns authoritative list of all 6 tab categories from server
+  - Discovered missing categories: `504` (Perempuan/Female), `506` (Laki-Laki/Male)
+  - Previously hidden `622` (Segera hadir/Coming Soon) confirmed with 238 dramas
+- **Pagination Support Verified**:
+  - All categories support pagination via `position_index` parameter
+  - Typical page size: 10 dramas (except tab 622: 238 per page)
+  - Estimated min content per category: 50+ dramas (5 pages tested)
+  - Tab 622 (Coming Soon): 1190+ dramas (5 pages × 238 per page)
+- **New Client Methods**:
+  - `get_homepage_tabs()`: Fetch authoritative tab list from server
+  - `get_dramas_by_category(tab_key, position_index)`: Fetch dramas with pagination
+
+### Fixed
+- Previous brute-force scan missed tab_key `504` and `506` because they were between tested ranges
+- Tab discovery now uses server-authoritative endpoint instead of guessing
+
+### Category Tab Mapping (Verified with Pagination):
+```
+503 -> Populer (popular)       - 50+ dramas (10/page)
+504 -> Perempuan (female)      - 50+ dramas (10/page)
+505 -> New (new)               - 50+ dramas (10/page)
+506 -> Laki-Laki (male)        - 50+ dramas (10/page)
+516 -> Dubbing (Doblaje)       - 50+ dramas (10/page)
+622 -> Segera hadir (comingsoon) - 1190+ dramas (238/page) ✨ LARGEST
+```
+
+## [1.1.0] - 2026-10-04
+
+### Added
+- **Homepage Tab Discovery**: Comprehensive brute-force test of tab_key range 500-600
+  - Identified 4 active category tabs with content
+  - Tab mapping: 503=Pilihan Populer, 505=New, 516=Dubbing, 1002=Dubbing
+  - All other tested tab_keys return empty or error (API code 600)
+  - Test script: `src/discover_all_tab_keys_comprehensive.py`
+- **Category Filter Analysis**: Reverse-engineered `/homepage/resource/filter` endpoint
+  - Request model: `CategoryFilterReq` with `filters[]`, `type`, `filter_id`
+  - Filter item structure: `CategoryFilterReqItem` with `type`, `id`, `items[]`
+  - Gender/audience filter NOT found in API (no male/female category endpoints)
+  - `CategoryTabType` enum: DRAMA(1), NOVEL(2), MIX(3), COMICS(4), HOT_LIST(10), CATEGORY_FILTER(100), H5_ACTIVITY(1000)
+  - Frida-Kahlo attempted but blocked by anti-debug in `libdwguard.so`
+  - Bytecode analysis via Android Reverse IDE completed
+
+## [1.0.0] - 2026-10-04
+
+### Added
+- **Anonymous Login System**: Fully independent guest authentication without phone requirement
+  - Auto-generate device_id and OAuth credentials
+  - MD5-based signature: `MD5("8IAcbWyCsVhYv82S2eofRqK1DF3nNDAv" + device_id)`
+  - OAuth header format: `oauth_signature={sig},oauth_token={token},ts={ts_ms}`
+  
+- **Response Decryption Engine**: AES-128-CBC automatic decryption
+  - Extracted native keys from `libdwguard.so` (ARM64 binary)
+  - Flavor 1: `3sa9Kx7mQu3Ls8Wd`
+  - Flavor 2: `79psatnvfgktswba`
+  - Auto-detect encrypted responses via `x-decry: 1` header
+  - Format: `Base64(IV_16 || AES-CBC-ciphertext || PKCS7-padding)`
+
+- **Multi-Language Support (22 Languages)**: Dynamic content localization via HTTP headers
+  - Supported: Indonesian, English, Spanish, Portuguese, French, German, Italian, Russian, Arabic, Hindi, Tamil, Telugu, Bengali, Thai, Vietnamese, Filipino, Malay, Japanese, Korean, Traditional Chinese, Polish, Turkish
+  - Method: `client.set_language("en")` or `client.set_language("ja-JP")`
+  - Headers updated: `app-display-lang`, `language`, `device-language`, `country`, `device-country`
+  - Server returns different drama catalogs and titles per language
+  - Default language: Indonesian (`id-ID`)
+
+- **API Endpoint Discovery**: 120+ reverse-engineered endpoints mapped
+  - Homepage feeds, drama info, search, categories, user profile, bookmarks, history
+  - Video URLs extraction from `/drama/info_v2` endpoint
+  - Subtitle lists (25 languages) with SRT and VTT formats
+  - Episode metadata with HLS streaming URLs
+
+- **Video Extraction System**:
+  - HLS master playlist URLs: `external_audio_h264_m3u8` and `external_audio_h265_m3u8`
+  - Adaptive bitrate streaming: 240p, 360p, 480p, 540p, 720p
+  - Direct CDN access for free episodes (no additional auth)
+  - Subtitle tracks in 25 languages (SRT + VTT)
+
+- **Native Library Analysis**:
+  - Disassembled `libdwguard.so` (ARM64, 20KB)
+  - Extracted AES keys at memory offsets `0x13c0` and `0x13d0`
+  - Identified anti-debug mechanisms (TracerPid check, APK signature validation)
+
+- **Documentation**:
+  - `docs/ANONYMOUS_LOGIN_SPEC.md`: Anonymous login flow
+  - `docs/RESPONSE_DECRYPTION_SPEC.md`: AES decryption specification
+  - `docs/API_ENDPOINTS_COMPLETE.md`: 120+ endpoints catalog
+  - `docs/LANGUAGE_LOCALIZATION_SYSTEM.md`: Language system architecture
+  - `docs/VIDEO_EXTRACTION_GUIDE.md`: HLS video extraction guide
+  - `docs/ARCHITECTURE_AND_SECURITY_ANALYSIS.md`: Comprehensive security analysis
+
+### Changed
+- Default headers set to Indonesian locale (`id-ID`, `ID`)
+- Session headers auto-configured on client initialization
+
+### Removed
+- Czech (`cs-CZ`), Romanian (`ro-RO`), Greek (`el-GR`) languages - no content available on server
+
+### Fixed
+- Unicode encoding errors on Windows console (CP1252 codec)
+- OAuth signature generation for anonymous vs authenticated requests (different secret suffix)
+- Response decryption flavor detection and padding removal
+
+### Security
+- All credentials auto-generated (no hardcoded secrets)
+- OAuth tokens refresh per session
+- Device fingerprinting isolated per client instance
+- Response encryption/decryption transparent to consumer
+
+### Technical Details
+**Authentication Flow:**
+1. Generate random `device_id` (16-char hex)
+2. Calculate `sign = MD5(prefix + device_id)`
+3. POST `/anonymous/login` with device_id and sign
+4. Server returns `auth_key` (oauth_token) and `auth_secret`
+5. All subsequent requests use OAuth signature header
+
+**Language Switching:**
+- Updates 5 HTTP headers dynamically
+- Server filters catalog by `country` header
+- Content titles and descriptions localized per `language` header
+- Subtitle tracks available regardless of language setting
+
+**Video Access:**
+- Free episodes: HLS URLs directly accessible
+- VIP episodes: Server may return empty HLS URL or CDN returns 403
+- No separate `/drama/download` endpoint needed
+- M3U8 playlists parseable with standard tools
+
+### Known Limitations
+- VIP unlock mechanism not fully analyzed (no VIP-locked dramas in test sample)
+- Some drama IDs region-specific (may return empty data in different locales)
+- Response encryption flavor selection not documented by server
+
+### Dependencies
+- Python 3.11+
+- `requests`: HTTP client
+- `pycryptodome`: AES decryption
+- `capstone`: ARM64 disassembly (for native analysis)
+
+### Files Structure
+```
+D:\BackEnd\Drama\FreeReels\
+├── src/
+│   ├── freereels_client.py       # Main API client (22 languages, decrypt, auth)
+│   ├── auth.py                   # OAuth signature builder
+│   ├── test_all_languages.py     # 22-language verification test
+│   ├── demo_dynamic_language.py  # Multi-language demo
+│   └── test_multi_language.py    # Language switching test
+├── docs/
+│   ├── ANONYMOUS_LOGIN_SPEC.md
+│   ├── RESPONSE_DECRYPTION_SPEC.md
+│   ├── API_ENDPOINTS_COMPLETE.md
+│   ├── LANGUAGE_LOCALIZATION_SYSTEM.md
+│   └── VIDEO_EXTRACTION_GUIDE.md
+├── native/
+│   └── libdwguard.so             # ARM64 native library (AES keys source)
+└── CHANGELOG.txt                 # This file
+```
+
+### Git Commits
+- `3549e1d`: Initial reverse engineering - auth, decryption, video extraction
+- `fe79975`: 25 languages implementation with dynamic header localization
+- `65994db`: Verify 22 working languages, remove cs/ro/el (no content)
+
+## [1.8.0] - 2026-10-05
+
+### Data Cleansing Feature
+- **Added `/api/feed/clean` endpoint:** Filters out navigation/header cards from `/homepage/v2/tab/feed`
+  - Removes items with `item_type: "card"` or `module_card` object
+  - Navigation cards (ranking tabs) now served by dedicated `/homepage/v2/rank` endpoint
+  - Returns only actual drama items
+  - Adds `_cleansing_info` metadata: original_count, cleaned_count, removed_navigation_cards
+- **Use case:** Client apps can use `/api/feed/clean` for pure drama lists without UI navigation elements
+
+### UI Updates
+- Added "Data Cleansing (Clean Feed)" card with 3 test buttons
+- Buttons test Popular, New, Dubbing categories with cleansing applied
+- Applied to both `src/api_proxy_v2.py` and `production/api/proxy.py`
+
+### Documentation
+- Updated `CHANGELOG.txt` with v1.8.0
+- Synced to `production/docs/CHANGELOG.txt`
+
+---
+
+## [1.7.0] - 2026-10-05
+
+### Ranking System Discovery & Fix
+- **Found correct ranking endpoint:** `POST /frv2-api/homepage/v2/rank`
+  - Parameter: `{"key": "daily|weekly|monthly|annually"}` (not `{"type": ...}`)
+  - Returns Top 20 dramas per period (fixed 20 items, no pagination)
+- **Verified via Frida intercept on device:**
+  - Hooked OkHttp `RequestBuilder.build()` during app ranking tab clicks
+  - Captured actual app requests: `/homepage/v2/rank` with `{"key": "..."}` body
+  - Endpoint `/homepage/rank` was ignoring parameters (always returning Most Trending)
+- **Ranking results match app:**
+  - Daily: "Malam Berkemah"
+  - Weekly: "Dimanja Bos Mafia Saat Hamil"
+  - Monthly: "Gelombang Sentuhan Terlarang"
+  - Annually: "Kebangkitan Ratu Lycan(Sulih Suara)"
+
+### UI Updates
+- Added "Ranking (Top 20 Leaderboard)" card with 4 buttons (Harian, Mingguan, Bulanan, Tahunan)
+- Fixed payload format from `{"type": ...}` to `{"key": ...}`
+- Synced to both `src/api_proxy_v2.py` and `production/api/proxy.py`
+
+### Production Updates
+- Added `get_ranking(period)` method to `production/core/client.py`
+- Added `production/scripts/test_ranking.py` test script
+- All production code mature and tested
+
+---
+
+## [1.6.0] - 2026-10-05
+
+### Documentation
+- Added comprehensive `docs/DATA_MODELS.md` (7000+ lines)
+  - Complete specification of all API data models
+  - Authentication models: AnonymousLoginRequest/Response, OAuth signature format
+  - Homepage & Feed models: TabListResponse, HomepageTabIndexResponse, HomepageTabFeedResponse
+  - Drama models: DramaItem, OperationTag, DramaDetailResponse (with 27 fields documented)
+  - Episode models: EpisodeInfo, Episode, Subtitle (25 languages)
+  - User, Search, Pagination models
+  - Response encryption/decryption specification
+  - Error codes and constants
+  - CDN infrastructure details
+  - Python usage examples with code samples
+
+### Pagination Discovery via Frida
+- **Critical finding:** Actual app uses `POST /homepage/v2/tab/feed` (not GET /tab/index) for load-more
+- Intercepted real requests via Frida OkHttp hook:
+  - Captured 20+ requests from Dubbing tab scroll
+  - Verified pagination parameter format: `{"next": "last_quality=0&offset=X&..."}`
+  - Confirmed `offset` increments by 10 per page
+  - Each page returns 10 items with `has_more: true`
+- **Module key mapping verified for ALL categories:**
+  - Popular (503): `module_key=1036`
+  - Perempuan (504): `module_key=1039`
+  - New (505): `module_key=1040`
+  - Laki-Laki (506): `module_key=1041`
+  - Dubbing (516): `module_key=1065`
+  - Anime (547): `module_key=2204`
+  - Segera Hadir (622): `module_key=1238` (240 items/page, GET only)
+- Tested with Python client: POST /tab/feed produces same response structure as GET /tab/index
+
+### UI Updates
+- Added "Feed / Pagination (Real App)" section to playground
+- 8 test buttons covering all major categories with different offsets
+- Both `src/api_proxy_v2.py` and `production/api/proxy.py` updated
+
+### Findings
+- GET endpoint (`/tab/index`) and POST endpoint (`/tab/feed`) return identical drama items
+- Both support pagination but with different parameter passing methods
+- POST method used by app for better performance/caching
+- Tab 622 (Segera Hadir) uniquely returns 240 items per page vs 10 for others
+- Pagination works across all categories via POST /tab/feed (except tab 622 which is GET only)
+
+---
+
+## Future Roadmap
+
+### Planned Features
+- [ ] VIP unlock mechanism analysis (pending VIP-locked drama samples)
+- [ ] Payment flow reverse engineering
+- [ ] CDN token generation for protected content
+- [ ] Drama recommendation algorithm analysis
+- [ ] User interaction tracking (views, likes, comments)
+- [ ] WebSocket real-time updates (if any)
+- [ ] Batch drama metadata extraction
+- [ ] Subtitle quality analysis and translation accuracy check
+- [ ] HLS segment downloader with retry logic
+- [ ] M3U8 playlist merger for offline playback
+
+### Under Investigation
+- Response encryption flavor selection logic
+- Episode URL predictability patterns
+- CDN vs API-level VIP enforcement
+- Drama ID generation algorithm
+- Region-specific content availability rules
+
+---
+
+## Version History
+
+| Version | Date | Description |
+|---------|------|-------------|
+| 1.0.0 | 2026-10-04 | Initial release - Full API reverse engineering complete |
+
+---
+
+## Notes
+
+- **Testing Environment**: Windows 11, Python 3.11, Android 13 (Redmi 5 Plus emulation)
+- **API Base URL**: `https://apiv2.free-reels.com`
+- **App Version Tested**: FreeReels 2.4.91
+- **APK Package**: `com.freereels.app`
+- **Primary Use Case**: API research and educational reverse engineering
+- **Legal Notice**: For authorized testing and personal research only
+
+---
+
+## Contact & Maintenance
+
+- **Project Location**: `D:\BackEnd\Drama\FreeReels`
+- **Last Updated**: 2026-10-04 14:34 UTC
+- **Maintained By**: Development Team
+- **Git Repository**: Local only (not published)
+
+---
+
+**End of Changelog**

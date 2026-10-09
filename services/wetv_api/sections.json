@@ -1,0 +1,253 @@
+{
+    "code": 200,
+    "message": "Success",
+    "provider": "wetv",
+    "timestamp": "2026-05-19T18:11:49.123Z",
+    "data": [
+        {
+            "title": "Top Picks for You",
+            "type": "BANNER",
+            "channel_id": "100110"
+        },
+        {
+            "title": "WeTV Hot",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "100111"
+        },
+        {
+            "title": "Segera Tayang",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "100112"
+        },
+        {
+            "title": "Terbaru",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "100113"
+        },
+        {
+            "title": "GRATIS hanya 24 JAM⏰",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "100125"
+        },
+        {
+            "title": "💖Kecanduan Micro Drama Nih~",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "100127"
+        },
+        {
+            "title": "Top Picks for You",
+            "type": "BANNER",
+            "channel_id": "1033610"
+        },
+        {
+            "title": "Trending🔥",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1033611"
+        },
+        {
+            "title": "Kisah Cinta Zaman Now",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1033625"
+        },
+        {
+            "title": "Asmara Bersemi di Masa Kerajaan",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1033629"
+        },
+        {
+            "title": "Mini Series yang Wajib Ditonton!📺",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1033639"
+        },
+        {
+            "title": "Romansa di Era Republikan",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10336311"
+        },
+        {
+            "title": "Pesona Roti Sobek",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10336313"
+        },
+        {
+            "title": "Ngakak Brutal Gak Ada Obat🤣",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10336413"
+        },
+        {
+            "title": "Asmara dalam Pernikahan Palsu",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10336415"
+        },
+        {
+            "title": "Selingkuh Berujung Petaka",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10336417"
+        },
+        {
+            "title": "Buat yang suka thriller dan misteri!👻",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10336519"
+        },
+        {
+            "title": "🇮🇩 Top Picks for You",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1000310"
+        },
+        {
+            "title": "🇮🇩 Coming Soon",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1000311"
+        },
+        {
+            "title": "🇮🇩 Panas!🔥",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1000312"
+        },
+        {
+            "title": "🇮🇩 Rekomendasi Untukmu!",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1000313"
+        },
+        {
+            "title": "🇮🇩 Hati-hati Kesurupan 👻",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1000327"
+        },
+        {
+            "title": "🇮🇩 Jaga Karya Lokal",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1000329"
+        },
+        {
+            "title": "🇮🇩 Kisah Cinta di Sekolah",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10003315"
+        },
+        {
+            "title": "🇮🇩 WeTV Original",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10003419"
+        },
+        {
+            "title": "🇮🇩 Romansa penuh Komedi",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10003517"
+        },
+        {
+            "title": "🇮🇩 Tontonan Keluarga",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10003519"
+        },
+        {
+            "title": "🇨🇳 Top Picks for You",
+            "type": "BANNER",
+            "channel_id": "1005410"
+        },
+        {
+            "title": "🇨🇳 Lagi Viral!",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1005412"
+        },
+        {
+            "title": "🇨🇳 Drama Kolosal",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1005425"
+        },
+        {
+            "title": "🇨🇳 Mini Series",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1005427"
+        },
+        {
+            "title": "🇨🇳 Movie",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "1005429"
+        },
+        {
+            "title": "🇨🇳 Gratis",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054211"
+        },
+        {
+            "title": "🇨🇳 Mature Drama💎",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054415"
+        },
+        {
+            "title": "🇨🇳 Spesialis DAR DER DOR",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054519"
+        },
+        {
+            "title": "🇨🇳 2025 Must-Watch!",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054621"
+        },
+        {
+            "title": "🇨🇳 Kepincut Cinta CEO",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054623"
+        },
+        {
+            "title": "🇨🇳 Couple 4951",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054625"
+        },
+        {
+            "title": "🇨🇳 Kakak Rasa Pacar💘",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054725"
+        },
+        {
+            "title": "🇨🇳 Nebeng Wifi Sembari PDKT 😳",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054727"
+        },
+        {
+            "title": "🇨🇳 Yang Lagi Populer🔎",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054731"
+        },
+        {
+            "title": "🇨🇳 Maraknya Perselingkuhan🤫",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054829"
+        },
+        {
+            "title": "🇨🇳 Drama Singkat Anti Gantung😋",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054831"
+        },
+        {
+            "title": "🇨🇳 Masih Setia Sama Mantan",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054833"
+        },
+        {
+            "title": "🇨🇳 Kisah Kasih di Sekolah📚",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054835"
+        },
+        {
+            "title": "🇨🇳 Colossal Drama 🎭",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054933"
+        },
+        {
+            "title": "🇨🇳 Dewinya Dracin✨",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054935"
+        },
+        {
+            "title": "🇨🇳 Drama Modern",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054937"
+        },
+        {
+            "title": "🇨🇳 Kesenjangan Usia 🙏🏻",
+            "type": "SUBJECTS_MOVIE",
+            "channel_id": "10054939"
+        }
+    ]
+}

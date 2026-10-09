@@ -1,0 +1,41 @@
+[Unit]
+Description=CineFlow API Proxy Service
+Documentation=https://github.com/bayudev-id/CineFlow-New-API
+After=network.target
+
+[Service]
+Type=simple
+User=cineflow
+Group=cineflow
+WorkingDirectory=/opt/cineflow-api
+Environment="PATH=/opt/cineflow-api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+EnvironmentFile=/opt/cineflow-api/.env
+ExecStart=/opt/cineflow-api/venv/bin/python main.py
+Restart=on-failure
+RestartSec=5s
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/opt/cineflow-api
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=no
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+# Resource limits
+LimitNOFILE=65536
+
+# Logs
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cineflow-api
+
+[Install]
+WantedBy=multi-user.target

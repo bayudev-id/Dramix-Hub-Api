@@ -1,0 +1,77 @@
+====================================
+KISSKH-API CHANGELOG
+====================================
+
+[2026-09-26] Bypass ISP DNS Blocking kisskh.do (502 Bad Gateway Fix)
+
+PROBLEM:
+--------
+Pemerintah/ISP (Biznet) memblokir kisskh.do via DNS poisoning:
+- Resolver sistem (8.8.8.8 via /etc/resolv.conf) mengembalikan IP mati
+  (202.169.44.80) -> koneksi gagal EHOSTUNREACH
+- Semua endpoint kisskh-api balik 502 {"message":"Gagal terhubung ke upstream"}
+- Frontend dramix.biz.id/kisskh error: "Error fetching content: HTTP error! status: 502"
+- Chain verifikasi: direct 7403 = 502, via dramix-proxy 7400 = 502,
+  via tunnel dramix.biz.id = 502 (root cause di kisskh-api sendiri)
+
+NOTE PENTING (jebakan teknis):
+- dns.setServers() TIDAK memengaruhi fetch() undici Node.js — fetch memakai
+  dns.lookup (getaddrinfo) yang tetap baca /etc/resolv.conf
+- Custom lookup pada https.Agent HARUS support options.all=true dan balik
+  callback(err, [{address, family}]) — kalau cuma callback(err, ip, family)
+  muncul error "ERR_INVALID_IP_ADDRESS Invalid IP address: undefined"
+
+SOLUTION:
+---------
+
+1. helpers/kisskhDns.js (BARU) - Health-checked DNS Lookup
+   - Resolve kisskh.do via dnscrypt-proxy lokal (127.0.0.1:5053)
+     yang upstream-nya Cloudflare DOH (tidak terkena DNS poisoning ISP)
+   - Probe TCP 443 tiap kandidat IP, pilih yang pertama bisa connect
+   - Cache hasil sehat 5 menit (menghindari probe berulang)
+   - Fallback ke dns.lookup sistem (IPv4) jika dnscrypt gagal semua
+   - Host selain kisskh.do diteruskan ke dns.lookup standar (tidak terpengaruh)
+
+2. helpers/fetchFromKissKH.js (REWRITE fetch -> https.request)
+   - fetch() diganti https.request dengan https.Agent({ lookup: kisskhLookup })
+   - Kontrak error tetap sama: type = timeout | network | upstream
+   - Redirect manual max 3 hops (fetch lama follow otomatis)
+   - Timer timeout via req.destroy + flag timedOut
+   - kkey injection untuk Episode/Sub tetap sama
+
+3. server.js - Agent Connection Pool
+   - httpsAgent & httpAgent ditambah opsi lookup: kisskhLookup
+   - Berlaku juga untuk endpoint /api/proxy (streaming manifest)
+
+DEPENDENCY:
+-----------
+- dnscrypt-proxy.service HARUS active (systemctl status dnscrypt-proxy)
+- Listen: 127.0.0.1:5053 (UDP+TCP), konfigurasi /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+- server_names = ['cloudflare']
+
+RESULT:
+-------
+✅ Direct kisskh-api (127.0.0.1:7403): HTTP 200, data valid
+✅ Via dramix-proxy (127.0.0.1:7400): HTTP 200
+✅ Via tunnel (https://dramix.biz.id/api/kisskh/...): HTTP 200
+✅ Frontend /kisskh tidak lagi 502
+
+TROUBLESHOOT:
+------------
+- Jika 502 balik lagi:
+  1. systemctl status dnscrypt-proxy  (harus active)
+  2. dig @127.0.0.1 -p 5053 kisskh.do A +short  (harus balik IP Cloudflare
+     104.21.x.x / 172.67.x.x, BUKAN 202.169.44.80)
+  3. systemctl restart kisskh-api
+- Jika error "ERR_INVALID_IP_ADDRESS" di log: cek signature callback
+  options.all di kisskhDns.js
+- Jika dnscrypt mati: kisskhLookup fallback ke resolver sistem yang
+  terpoisoning -> kemungkinan besar gagal lagi
+
+REFERENCES:
+-----------
+- /opt/kisskh-api/helpers/kisskhDns.js
+- /opt/kisskh-api/helpers/fetchFromKissKH.js
+- /opt/kisskh-api/server.js (agents)
+- /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+- /etc/systemd/system/kisskh-api.service (port 7403, user kisskh)

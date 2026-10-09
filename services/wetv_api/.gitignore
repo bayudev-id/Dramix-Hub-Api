@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.env.local
+.env.*.local
+venv/
+ENV/
+env/
+node_modules/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Burp Suite files
+.1burpLOGIN/
+.2burpHOME/
+.3burpSEARCH/
+.4burpALBUM/
+.5burpPLAY/
+
+scratch/
+
+# Test / experimental folder
+.kodepercobaanjangandihapus/

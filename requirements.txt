@@ -1,0 +1,24 @@
+# DRAMIX GATEWAY - UNIFIED PYTHON DEPENDENCIES
+# Gunakan 1 virtual environment untuk seluruh service Python (hemat storage ~85%)
+# Install: pip install -r requirements.txt
+
+# Core Framework & Server
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+pydantic-settings>=2.0.0
+
+# HTTP Clients
+httpx>=0.27.0
+requests>=2.31.0
+
+# Security, Token & Cryptography
+cryptography>=42.0.0
+pycryptodome>=3.20.0
+
+# Utilities
+python-dotenv>=1.0.1
+beautifulsoup4>=4.12.0
+
+# Database / Cloud (Optional Sync)
+supabase>=2.0.0

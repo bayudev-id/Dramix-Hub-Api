@@ -1,0 +1,12 @@
+node_modules/
+scratch/
+tests/
+.kiro/
+.referensi/
+.scriptReference/
+page.html
+.env
+.vercel
+.vercelignore
+.console
+stb-deploy

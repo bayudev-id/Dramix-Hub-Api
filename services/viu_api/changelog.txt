@@ -1,0 +1,85 @@
+====================================
+VIU-API CHANGELOG
+====================================
+
+[2026-09-26] DRM Token Handling + Error Response Fix (play.py)
+
+PROBLEM:
+--------
+1. Upstream dms-api.viu.com melempar 403 jika query param `token`
+   diteruskan. Frontend mengirim token DRM sebagai query param pada
+   request proxied m3u8 (/vod/vuclip_vod.m3u8, /vod/vuclip_airplay.m3u8,
+   dan fallback) — token ini TIDAK boleh diteruskan upstream.
+2. Error response (non-200) kekurangan Content-Length, sehingga transport
+   (nginx/tunnel) menolak dan hls.js melaporkan "status 0" network error.
+
+CHANGES:
+--------
+
+1. play.py - Ekstraksi DRM Token Sebelum Forward
+   - Variabel di-rename `token` -> `drm_token` untuk kejelasan
+   - Pada 3 endpoint (proxy_vod_m3u8, proxy_airplay_m3u8, proxy_vod_fallback):
+     drm_token diekstrak dari query_params (token / _token) dan DIREMOVE
+     sebelum diteruskan upstream dms-api.viu.com
+   - `api_key` & `secret` juga di-pop (tidak diteruskan)
+   - drm_token tetap dipakai untuk rewrite m3u8 line respon (rewrite_m3u8_line)
+
+2. play.py - Error Response dengan JSON + Content-Length Eksplisit
+   - Saat upstream respon != 200, kembalikan JSON body yang eksplisit
+   - Header Content-Length diset sesuai panjang body -> mencegah transport
+     rejection "status 0" oleh nginx/Cloudflare tunnel
+   - Juga menambah Access-Control-Allow-Origin: *
+
+RESULT:
+-------
+✅ Token DRM tidak lagi diteruskan upstream (403 hilang)
+✅ Error response valid secara transport (tidak lagi drop jadi status 0)
+✅ VIU drama playback stabil end-to-end via tunnel
+
+REFERENCE FILES:
+- /opt/viu-api/play.py (get_playback_distribute, proxy_airplay_m3u8,
+  proxy_vod_m3u8, proxy_vod_fallback)
+- Catatan: getkey endpoint (/api/appsdrm/getkey) membutuhkan header
+  Authorization — 401 pada curl biasa adalah hal wajar.
+
+---
+
+[2026-09-25] VIU HLS Playback Fix
+
+CHANGES:
+--------
+
+1. play.py - URL Rewriting for Proxy Compatibility
+   
+   Modified rewrite_m3u8_line() and rewrite_viu_urls() functions to ensure
+   upstream URLs are rewritten relative to proxy origin (dramix.biz.id).
+   
+   - dms-api.viu.com URLs → {local_host}/vod/... (proxy-server.cjs adds /api/viu prefix)
+   - prod-in.viu.com/api/appsdrm/getkey URLs → {local_host}/api/appsdrm/getkey
+   
+   This ensures m3u8 manifest keys and endpoint URLs resolve through proxy gateway
+   instead of direct upstream.
+
+2. proxy-server.cjs - Forwarded Headers
+   
+   Added forwarded headers to VIU upstream requests:
+   - x-forwarded-proto: https
+   - host: dramix.biz.id
+   
+   This ensures viu-api correctly identifies incoming origin and generates
+   appropriate rewritten URLs with correct scheme/host in manifest.
+
+RESULT:
+-------
+✅ HLS manifest loads successfully through proxy
+✅ DRM key endpoint URL: https://dramix.biz.id/api/viu/api/appsdrm/getkey
+✅ Segment URLs: Direct CDN URLs with valid tokens
+✅ VIU drama playback functional
+
+TESTED ENDPOINT:
+http://127.0.0.1:7400/api/viu/vod/vuclip_vod.m3u8?cdn=byteplus&vid=1166300952&...
+
+REFERENCES:
+-----------
+- /opt/viu-api/play.py (lines 18-56, 273-332, 324-389, 386-400)
+- /opt/dramix/proxy-server.cjs (lines 450-456)

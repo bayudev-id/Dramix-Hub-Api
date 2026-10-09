@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Session Data
+session_data.json
+*.session
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# APK files (optional - uncomment if you don't want to track APKs)
+# apk/*.apk
+# apk/*.idsig
+
+# Decompiled files (large, can be regenerated)
+pk_extracted/
+decompile/
+
+# Sensitive data
+*.key
+*.pem
+*.p12
+*.keystore
+!debug.keystore
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# Test results
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Burp Suite
+burp_project.burp
+burp_diagnostics.log
+
+# Environment variables
+.env
+.env.local
+PROJECT-NEW-VERSION/
+jangan dihapus/
+frida/
+docs/
+apk/
+apk_extracted/
+Modifikasi File/
+Referensi/
+scripts/
+tools/
+supabase/
+session_data.json.bak_20260914_211204
+session_data.json.bak_20260914_215743
+main.py.bak_20260914_211204

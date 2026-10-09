@@ -12,6 +12,12 @@ Semua perubahan pada **Dramix Hub API (Gateway)** dicatat dalam dokumen ini meng
   - Provider sisanya diurutkan alfabetis
   - Memastikan konsistensi urutan di seluruh aplikasi (Home, Search, Player).
 
+### Fixed
+- **Search Portrait Cover Availability**: Audit endpoint `/api/modelles/search` untuk 24 provider. Hasil:
+  - ✓ 15/24 provider (62.5%) menyediakan cover portrait lengkap: WeTV, MovieBox, VIU, KissKH, iQIYI, Youku, FreeReels, Anichin, Anichin V2, Animelovers, Bstation, CineMovies, CineTv, Mobinime, Samehadaku.
+  - ✗ 9/24 provider sementara skip karena error upstream (CineFlow crash: 6 provider), inactive (1 provider), atau no-match results (2 provider).
+  - Semua 15 provider sukses dikonfirmasi memiliki field `cover` atau fallback (`cover_portrait`, `vertical_cover`, `thumbnail`, `banner`, `poster`) dengan data non-empty.
+
 ---
 
 ## [1.2.0] - 2026-10-09

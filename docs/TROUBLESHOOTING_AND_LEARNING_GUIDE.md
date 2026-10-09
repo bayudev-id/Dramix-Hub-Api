@@ -44,20 +44,30 @@ if (res.json && res.json.pager) {
    `"has_more": true`. Client berasumsi ada halaman 2, mengirim request `page=2`, menerima list kosong atau identik, namun tetap diberitahu `"has_more": true`.
 
 ### Solusi & Implementasi
-Terapkan **Type-Strict Boolean Check**:
+Terapkan **Type-Strict Boolean Check & Non-Trending Cutoff**:
 ```javascript
 // PERBAIKAN DI videos.pb.js:
-let hasMore = false; // Default SAFE: asumsikan tidak ada pagination
-if (res.json && res.json.pager && typeof res.json.pager.has_more === "boolean") {
-    hasMore = res.json.pager.has_more;
-} else {
+const isTrending = (String(categoryId) === "3521493905000087296");
+if (!isTrending && pageNum > 1) {
+    // Kategori selain Rekomendasi tidak memiliki pagination; kembalikan kosong jika page > 1
     hasMore = false;
+    rawItems = [];
+} else {
+    // Fetch ke microservice :7404
+    ...
+    if (isTrending && res.json && res.json.pager && typeof res.json.pager.has_more === "boolean") {
+        hasMore = res.json.pager.has_more;
+    } else {
+        hasMore = false;
+    }
 }
 ```
-Untuk kategori MovieBox, hanya kategori tertentu (seperti `Rekomendasi` / feed paginated) yang upstream-nya secara eksplisit menyertakan boolean `true`. Seluruh kategori statis lainnya langsung diputus dengan `has_more: false`.
+Untuk MovieBox, hanya kategori khusus (`Rekomendasi` / feed paginated) yang upstream-nya menyertakan pagination dinamis via `pager.has_more`. Seluruh kategori kurasi statis lainnya langsung diputus dengan `has_more: false` pada `pageNum = 1`, dan permintaan `pageNum > 1` langsung mengembalikan array kosong tanpa memanggil upstream kembali.
 
 ### Pelajaran Penting (Lessons Learned)
 - **Defensive Defaulting**: Pada integrasi multi-source pihak ketiga, default state harus selalu nilai teraman (*safe default*). Pagination default adalah `false`, bukan `true`.
+- **Short-Circuit Static Categories**: Untuk seksi data kurasi statis yang tidak mendukung pagination upstream, jangan biarkan query `page > 1` menembus upstream. Potong langsung di API gateway untuk mencegah loop pengiriman data identik dan membuang resource server.
+- **Hot-Reload vs Startup Hooks**: Perubahan hook JavaScript pada PocketBase (`pb_hooks/*.js`) dievaluasi saat inisialisasi server. Setelah memperbarui script hook, PocketBase wajib di-restart agar kode baru aktif.
 - **Type Checking Primitif**: Jangan hanya memeriksa `truthy/falsy` di JavaScript (`if (pager.has_more)`). Gunakan `typeof ... === "boolean"` untuk membedakan antara `undefined`, `null`, `0`, dan `false`.
 
 ---

@@ -11,7 +11,7 @@ Semua perubahan pada **Dramix Hub API (Gateway)** dicatat dalam dokumen ini meng
 ## [1.2.0] - 2026-10-09
 
 ### Fixed
-- **MovieBox Pagination Loop**: Memperbaiki logika penentuan `hasMore` pada `pocketbase/pb_hooks/videos.pb.js`. Field `has_more` kini secara defensif disetel ke `false` kecuali upstream mengembalikan boolean `true` eksplisit. Mencegah infinite scroll query berulang pada client Android saat browsing kategori video statis.
+- **MovieBox Pagination Loop & Non-Trending Cutoff**: Memperbaiki penanganan kategori MovieBox pada `pocketbase/pb_hooks/videos.pb.js`. Untuk kategori kurasi statis (selain Rekomendasi/Trending), permintaan `pageNum > 1` kini langsung diputus dengan `has_more = false` dan array item kosong tanpa meneruskan request duplikat ke upstream microservice `:7404`. Field `has_more` hanya aktif jika kategori merupakan seksi Rekomendasi dan upstream mengembalikan boolean `pager.has_more: true` secara eksplisit.
 
 ### Added
 - **Panduan Pembelajaran & Pemecahan Masalah**: Penambahan [`docs/TROUBLESHOOTING_AND_LEARNING_GUIDE.md`](docs/TROUBLESHOOTING_AND_LEARNING_GUIDE.md) yang mengulas analisis akar masalah, normalisasi API 24 provider, hardware license binding, dan determinisme JSON.

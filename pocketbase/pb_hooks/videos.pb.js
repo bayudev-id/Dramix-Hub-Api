@@ -252,54 +252,61 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
         }
         // 3. MovieBox (Port 7404)
         else if (normalizedId === "moviebox") {
-            const mbPage = Math.max(0, pageNum - 1);
-            const res = $http.send({
-                url: "http://127.0.0.1:7404/content?opId=" + encodeURIComponent(categoryId) + "&page=" + mbPage + "&perPage=18",
-                method: "GET",
-                timeout: 10
-            });
-            if (res.statusCode !== 200) {
-                return jsonError(res.statusCode === 404 ? 404 : 502, "Gagal mengambil konten dari MovieBox service: " + res.statusCode);
-            }
-            if (res.json && res.json.pager && typeof res.json.pager.has_more === "boolean") {
-                hasMore = res.json.pager.has_more;
-            } else {
+            const isTrending = (String(categoryId) === "3521493905000087296");
+            if (!isTrending && pageNum > 1) {
+                // Kategori selain Rekomendasi tidak memiliki pagination; kembalikan kosong jika page > 1
                 hasMore = false;
-            }
-            const raw = (res.json && res.json.data) || [];
-            for (let i = 0; i < raw.length; i++) {
-                const it = raw[i];
-                const itemId = it.detail_path || it.subject_id || it.id;
-                if (itemId) {
-                    let itemType = "movie";
-                    if (it.subject_type === 2) {
-                        itemType = "drama";
-                    } else if (it.subject_type === 7) {
-                        itemType = "short_drama";
-                    } else if (it.subject_type === 1) {
-                        itemType = "movie";
+                rawItems = [];
+            } else {
+                const mbPage = Math.max(0, pageNum - 1);
+                const res = $http.send({
+                    url: "http://127.0.0.1:7404/content?opId=" + encodeURIComponent(categoryId) + "&page=" + mbPage + "&perPage=18",
+                    method: "GET",
+                    timeout: 10
+                });
+                if (res.statusCode !== 200) {
+                    return jsonError(res.statusCode === 404 ? 404 : 502, "Gagal mengambil konten dari MovieBox service: " + res.statusCode);
+                }
+                if (isTrending && res.json && res.json.pager && typeof res.json.pager.has_more === "boolean") {
+                    hasMore = res.json.pager.has_more;
+                } else {
+                    hasMore = false;
+                }
+                const raw = (res.json && res.json.data) || [];
+                for (let i = 0; i < raw.length; i++) {
+                    const it = raw[i];
+                    const itemId = it.detail_path || it.subject_id || it.id;
+                    if (itemId) {
+                        let itemType = "movie";
+                        if (it.subject_type === 2) {
+                            itemType = "drama";
+                        } else if (it.subject_type === 7) {
+                            itemType = "short_drama";
+                        } else if (it.subject_type === 1) {
+                            itemType = "movie";
+                        }
+
+                        const tags = Array.isArray(it.genre) ? it.genre.slice() : [];
+                        const isVip = Boolean(it.corner && it.corner.toLowerCase().indexOf("vip") !== -1);
+                        if (isVip && tags.indexOf("VIP") === -1) {
+                            tags.unshift("VIP");
+                        }
+
+                        const sv = parseScoreAndViews(it.imdb_rating, "");
+
+                        rawItems.push({
+                            id: String(itemId),
+                            title: String(it.title || ""),
+                            cover: optimizeCoverUrl(String(it.cover || ""), "MovieBox"),
+                            type: itemType,
+                            source: "MovieBox",
+                            episode_info: "",
+                            score: sv.score,
+                            views: sv.views,
+                            is_vip: isVip,
+                            tags: tags
+                        });
                     }
-
-                    const tags = Array.isArray(it.genre) ? it.genre.slice() : [];
-                    const isVip = Boolean(it.corner && it.corner.toLowerCase().indexOf("vip") !== -1);
-                    if (isVip && tags.indexOf("VIP") === -1) {
-                        tags.unshift("VIP");
-                    }
-
-                    const sv = parseScoreAndViews(it.imdb_rating, "");
-
-                    rawItems.push({
-                        id: String(itemId),
-                        title: String(it.title || ""),
-                        cover: optimizeCoverUrl(String(it.cover || ""), "MovieBox"),
-                        type: itemType,
-                        source: "MovieBox",
-                        episode_info: "",
-                        score: sv.score,
-                        views: sv.views,
-                        is_vip: isVip,
-                        tags: tags
-                    });
                 }
             }
         }

@@ -6,6 +6,12 @@ Semua perubahan pada **Dramix Hub API (Gateway)** dicatat dalam dokumen ini meng
 
 ## [Unreleased]
 
+### Added
+- **Provider Priority Ordering di `/api/modelles/models`**: Menetapkan urutan prioritas resmi provider pada endpoint models dengan priority map di `pocketbase/pb_hooks/models.pb.js`:
+  - Posisi 1-7: WeTV, MovieBox, VIU, KissKH, iQIYI, Youku, FreeReels
+  - Provider sisanya diurutkan alfabetis
+  - Memastikan konsistensi urutan di seluruh aplikasi (Home, Search, Player).
+
 ---
 
 ## [1.2.0] - 2026-10-09

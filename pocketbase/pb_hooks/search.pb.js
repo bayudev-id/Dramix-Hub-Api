@@ -39,8 +39,17 @@ const handleSearch = (e) => {
             const trimmed = url.trim();
             if (!trimmed) return "";
             
-            // Filter bad/broken domains
-            if (trimmed.includes("serveproxy.com")) return "";
+            // Extract real URL from serveproxy.com wrapper using manual parsing
+            if (trimmed.includes("serveproxy.com") && trimmed.includes("?url=")) {
+                const urlParamIndex = trimmed.indexOf("?url=");
+                if (urlParamIndex !== -1) {
+                    const extractedUrl = trimmed.substring(urlParamIndex + 5); // skip "?url="
+                    // Check if extracted URL is valid (starts with http)
+                    if (extractedUrl.startsWith("http://") || extractedUrl.startsWith("https://")) {
+                        return extractedUrl;
+                    }
+                }
+            }
             
             // Convert HTTP → HTTPS for known CDNs
             if (trimmed.startsWith("http://pic") && trimmed.includes("iqiyipic.com")) {

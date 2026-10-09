@@ -219,10 +219,18 @@ routerAdd("GET", "/api/modelles/source", (e) => {
             const rawSubs = Array.isArray(d.subtitles) ? d.subtitles : [];
 
             for (let i = 0; i < rawStreams.length; i++) {
+                let streamUrl = String(rawStreams[i].url || "");
+                
+                // Rewrite localhost VIU service URLs untuk network accessibility
+                if (streamUrl.indexOf("http://127.0.0.1:7405") === 0) {
+                    // Replace dengan LAN IP gateway server (configurable via env di production)
+                    streamUrl = streamUrl.replace("http://127.0.0.1:7405", "http://192.168.18.105:7405");
+                }
+                
                 streams.push({
                     quality: String(rawStreams[i].quality || "Auto"),
                     format: String(rawStreams[i].format || "hls").toLowerCase(),
-                    url: String(rawStreams[i].url || ""),
+                    url: streamUrl,
                     is_drm: false,
                     drm: null
                 });

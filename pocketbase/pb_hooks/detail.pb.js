@@ -34,6 +34,33 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             return { score: score, views: views };
         };
 
+        const sanitizeCoverUrl = function(url) {
+            if (!url || typeof url !== "string") return "";
+            const trimmed = url.trim();
+            if (!trimmed) return "";
+            
+            // Extract from serveproxy wrapper
+            if (trimmed.includes("serveproxy.com") && trimmed.includes("?url=")) {
+                const urlParamIndex = trimmed.indexOf("?url=");
+                if (urlParamIndex !== -1) {
+                    const extractedUrl = trimmed.substring(urlParamIndex + 5);
+                    if (extractedUrl.startsWith("http://") || extractedUrl.startsWith("https://")) {
+                        return extractedUrl;
+                    }
+                }
+            }
+            
+            // Convert HTTP → HTTPS for known CDNs
+            if (trimmed.startsWith("http://pic") && trimmed.includes("iqiyipic.com")) {
+                return trimmed.replace("http://", "https://");
+            }
+            if (trimmed.startsWith("http://m.ykimg.com")) {
+                return trimmed.replace("http://", "https://");
+            }
+            
+            return trimmed;
+        };
+
         const info = e.requestInfo();
 
         // 1. Validasi allowed query parameters (strict, no query parameter leakage)
@@ -177,7 +204,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                     id: String(ep.vid || ep.id || (contentId + "_" + (i + 1))),
                     title: String(ep.title || ("Episode " + epNum)),
                     number: epNum,
-                    cover: String(ep.cover || alb.cover_h || alb.cover_v || ""),
+                    cover: sanitizeCoverUrl(String(ep.cover || alb.cover_h || alb.cover_v || "")),
                     duration_seconds: 0,
                     is_vip: epIsVip,
                     is_sewa: epIsSewa,
@@ -473,7 +500,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             detail = {
                 id: String(seriesMeta.series_id || contentId),
                 title: String(seriesMeta.name || (rawProducts[0] && rawProducts[0].synopsis) || ""),
-                cover: String(seriesMeta.cover_landscape_image_url || seriesMeta.cover_portrait_image_url || (rawProducts[0] && rawProducts[0].cover_image_url) || ""),
+                cover: sanitizeCoverUrl(String(seriesMeta.cover_landscape_image_url || seriesMeta.cover_portrait_image_url || (rawProducts[0] && rawProducts[0].cover_image_url) || "")),
                 description: String(seriesMeta.description || ""),
                 type: isMovie ? "movie" : "drama",
                 source: "Viu",
@@ -611,7 +638,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                     id: String(ep.video_id || epNum),
                     title: String(ep.title || ("Episode " + epNum)),
                     number: epNum,
-                    cover: String(info.cover || info.banner || ""),
+                    cover: sanitizeCoverUrl(String(info.cover || info.banner || "")),
                     duration_seconds: ep.duration || 0,
                     is_vip: epIsVip,
                     is_express: false,
@@ -788,7 +815,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                         id: String(d.id || contentId),
                         title: "Full Movie",
                         number: 1,
-                        cover: String(d.cover_url || d.cover || ""),
+                        cover: sanitizeCoverUrl(String(d.cover_url || d.cover || "")),
                         duration_seconds: d.duration || 0,
                         is_vip: false,
                         is_express: false,
@@ -811,7 +838,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             detail = {
                 id: String(d.id || contentId),
                 title: String(d.title || ""),
-                cover: String(d.cover_url || d.cover || ""),
+                cover: sanitizeCoverUrl(String(d.cover_url || d.cover || "")),
                 description: String(d.description || ""),
                 type: String(d.type || d.content_type || "drama"),
                 source: String(d.source || canonicalId),
@@ -880,7 +907,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             '"data":{' +
                 '"id":' + JSON.stringify(detail.id) + "," +
                 '"title":' + JSON.stringify(detail.title) + "," +
-                '"cover":' + JSON.stringify(detail.cover) + "," +
+                '"cover":' + JSON.stringify(sanitizeCoverUrl(detail.cover)) + "," +
                 '"description":' + JSON.stringify(detail.description || "") + "," +
                 '"type":' + JSON.stringify(detail.type || "drama") + "," +
                 '"source":' + JSON.stringify(detail.source) + "," +

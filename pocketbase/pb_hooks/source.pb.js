@@ -223,8 +223,8 @@ routerAdd("GET", "/api/modelles/source", (e) => {
                 
                 // Rewrite localhost VIU service URLs untuk network accessibility
                 if (streamUrl.indexOf("http://127.0.0.1:7405") === 0) {
-                    // Replace dengan LAN IP gateway server (configurable via env di production)
-                    streamUrl = streamUrl.replace("http://127.0.0.1:7405", "http://192.168.18.105:7405");
+                    // Replace dengan LAN IP gateway server (TODO: make configurable)
+                    streamUrl = streamUrl.replace("http://127.0.0.1:7405", "http://192.168.18.200:7405");
                 }
                 
                 streams.push({

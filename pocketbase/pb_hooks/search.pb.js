@@ -155,7 +155,7 @@ const handleSearch = (e) => {
                     rawItems.push({
                         id: String(itemId),
                         title: String(it.title || ""),
-                        cover: String(it.cover || it.cover_v || it.cover_h || ""),
+                        cover: String(it.cover_v || it.cover || it.cover_h || ""),
                         type: "drama",
                         source: "WeTV",
                         episode_info: String(it.episode_info || ""),
@@ -225,7 +225,7 @@ const handleSearch = (e) => {
                     rawItems.push({
                         id: String(itemId),
                         title: String(it.title || ""),
-                        cover: String(it.cover || it.cover_portrait || ""),
+                        cover: String(it.cover_portrait || it.cover || ""),
                         type: "drama",
                         source: "Viu",
                         episode_info: epInfo,

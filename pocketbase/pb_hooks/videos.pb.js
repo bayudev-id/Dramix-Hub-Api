@@ -15,6 +15,25 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
         const optimizeCoverUrl = function(url, providerSource) {
             if (!url || typeof url !== "string") return url;
             
+            // Extract from serveproxy wrapper
+            if (url.includes("serveproxy.com") && url.includes("?url=")) {
+                const urlParamIndex = url.indexOf("?url=");
+                if (urlParamIndex !== -1) {
+                    const extractedUrl = url.substring(urlParamIndex + 5);
+                    if (extractedUrl.startsWith("http://") || extractedUrl.startsWith("https://")) {
+                        url = extractedUrl;
+                    }
+                }
+            }
+            
+            // Convert HTTP → HTTPS for known CDNs
+            if (url.startsWith("http://pic") && url.includes("iqiyipic.com")) {
+                url = url.replace("http://", "https://");
+            }
+            if (url.startsWith("http://m.ykimg.com")) {
+                url = url.replace("http://", "https://");
+            }
+            
             const source = (providerSource || "").toLowerCase();
             
             // MovieBox: Alibaba OSS CDN - resize to 360px width, ~30-40KB from 200-800KB
@@ -355,7 +374,7 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                     rawItems.push({
                         id: String(itemId),
                         title: String(it.name || it.title || ""),
-                        cover: optimizeCoverUrl(String(it.cover_landscape_image_url || it.cover_portrait_image_url || it.cover_image_url || ""), "Viu"),
+                        cover: optimizeCoverUrl(String(it.cover_portrait_image_url || it.cover_landscape_image_url || it.cover_image_url || ""), "Viu"),
                         type: itemType,
                         source: "Viu",
                         episode_info: epInfo,

@@ -134,6 +134,16 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
             if (res.statusCode !== 200) {
                 return jsonError(res.statusCode === 404 ? 404 : 502, "Gagal mengambil daftar drama dari KissKH service");
             }
+            if (res.json && typeof res.json.totalCount === "number" && res.json.totalCount > 0) {
+                const total = res.json.totalCount;
+                const ps = typeof res.json.pageSize === "number" ? res.json.pageSize : 18;
+                hasMore = (pageNum * ps) < total;
+                if (!hasMore && pageNum > Math.ceil(total / ps)) {
+                    rawItems = [];
+                }
+            } else {
+                hasMore = false;
+            }
             const raw = (res.json && res.json.data) || [];
             for (let i = 0; i < raw.length; i++) {
                 const it = raw[i];
@@ -321,6 +331,9 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 return jsonError(res.statusCode === 404 ? 404 : 502, "Gagal mengambil daftar drama dari Viu service");
             }
             const seriesList = (res.json && res.json.data && res.json.data.series) || [];
+            if (!Array.isArray(seriesList) || seriesList.length === 0 || seriesList.length < 20) {
+                hasMore = false;
+            }
             for (let i = 0; i < seriesList.length; i++) {
                 const it = seriesList[i];
                 const itemId = it.series_id || it.product_id || it.id;
@@ -363,6 +376,13 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
             });
             if (res.statusCode !== 200) {
                 return jsonError(res.statusCode === 404 ? 404 : 502, "Gagal mengambil video dari FreeReels service");
+            }
+            if (res.json && typeof res.json.has_more === "boolean") {
+                hasMore = res.json.has_more;
+            } else if (res.json && res.json.data && res.json.data.page_info && typeof res.json.data.page_info.has_more === "boolean") {
+                hasMore = res.json.data.page_info.has_more;
+            } else {
+                hasMore = false;
             }
             let list = [];
             if (res.json) {
@@ -426,11 +446,17 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
             let res = null;
 
             if (lowerCat === "feed" || lowerCat === "home") {
-                res = $http.send({
-                    url: "http://127.0.0.1:7407/api/feed",
-                    method: "GET",
-                    timeout: 10
-                });
+                if (pageNum > 1) {
+                    hasMore = false;
+                    rawItems = [];
+                } else {
+                    res = $http.send({
+                        url: "http://127.0.0.1:7407/api/feed",
+                        method: "GET",
+                        timeout: 10
+                    });
+                    hasMore = false;
+                }
             } else {
                 let kw = categoryId;
                 if (categoryId === "2") kw = "drama";
@@ -447,41 +473,46 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 });
             }
 
-            if (res.statusCode !== 200) {
-                return jsonError(res.statusCode === 404 ? 404 : 502, "Gagal mengambil drama dari iQIYI service");
-            }
+            if (res) {
+                if (res.statusCode !== 200) {
+                    return jsonError(res.statusCode === 404 ? 404 : 502, "Gagal mengambil drama dari iQIYI service");
+                }
 
-            const rawList = (res.json && res.json.data && res.json.data.items) ||
-                            (res.json && Array.isArray(res.json.data) ? res.json.data : []);
-            for (let i = 0; i < rawList.length; i++) {
-                const it = rawList[i];
-                if (it && it.id) {
-                    let itemType = "drama";
-                    if (categoryId === "1") itemType = "movie";
-                    else if (categoryId === "4") itemType = "anime";
-                    else if (categoryId === "6") itemType = "variety";
+                const rawList = (res.json && res.json.data && res.json.data.items) ||
+                                (res.json && Array.isArray(res.json.data) ? res.json.data : []);
+                if (rawList.length < 25) {
+                    hasMore = false;
+                }
+                for (let i = 0; i < rawList.length; i++) {
+                    const it = rawList[i];
+                    if (it && it.id) {
+                        let itemType = "drama";
+                        if (categoryId === "1") itemType = "movie";
+                        else if (categoryId === "4") itemType = "anime";
+                        else if (categoryId === "6") itemType = "variety";
 
-                    const isVip = Boolean(it.vip_status || it.is_vip);
-                    let tags = Array.isArray(it.tags) ? it.tags.slice() : [];
-                    if (it.genre && tags.indexOf(it.genre) === -1) tags.push(it.genre);
-                    if (it.badge && tags.indexOf(it.badge) === -1) tags.push(it.badge);
-                    if (isVip && tags.indexOf("VIP") === -1) tags.unshift("VIP");
+                        const isVip = Boolean(it.vip_status || it.is_vip);
+                        let tags = Array.isArray(it.tags) ? it.tags.slice() : [];
+                        if (it.genre && tags.indexOf(it.genre) === -1) tags.push(it.genre);
+                        if (it.badge && tags.indexOf(it.badge) === -1) tags.push(it.badge);
+                        if (isVip && tags.indexOf("VIP") === -1) tags.unshift("VIP");
 
-                    const epCount = it.total_episodes ? ("Total " + it.total_episodes + " EP") : "";
-                    const sv = parseScoreAndViews(it.score || it.rating, it.score_votes ? String(it.score_votes) : "");
+                        const epCount = it.total_episodes ? ("Total " + it.total_episodes + " EP") : "";
+                        const sv = parseScoreAndViews(it.score || it.rating, it.score_votes ? String(it.score_votes) : "");
 
-                    rawItems.push({
-                        id: String(it.id),
-                        title: String(it.name || it.title || ""),
-                        cover: optimizeCoverUrl(String(it.cover || it.banner || ""), "iQIYI"),
-                        type: itemType,
-                        source: "iQIYI",
-                        episode_info: epCount,
-                        score: sv.score,
-                        views: sv.views,
-                        is_vip: isVip,
-                        tags: tags
-                    });
+                        rawItems.push({
+                            id: String(it.id),
+                            title: String(it.name || it.title || ""),
+                            cover: optimizeCoverUrl(String(it.cover || it.banner || ""), "iQIYI"),
+                            type: itemType,
+                            source: "iQIYI",
+                            episode_info: epCount,
+                            score: sv.score,
+                            views: sv.views,
+                            is_vip: isVip,
+                            tags: tags
+                        });
+                    }
                 }
             }
         }
@@ -494,6 +525,13 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
             });
             if (cfRes.statusCode !== 200) {
                 return jsonError(cfRes.statusCode, "Gagal mengambil video dari upstream CineFlow");
+            }
+            if (cfRes.json && cfRes.json.data && typeof cfRes.json.data.has_more === "boolean") {
+                hasMore = cfRes.json.data.has_more;
+            } else if (cfRes.json && typeof cfRes.json.has_more === "boolean") {
+                hasMore = cfRes.json.has_more;
+            } else {
+                hasMore = false;
             }
             const raw = (cfRes.json && cfRes.json.data && cfRes.json.data.items) || [];
             for (let i = 0; i < raw.length; i++) {

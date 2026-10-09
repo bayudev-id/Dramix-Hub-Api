@@ -34,6 +34,25 @@ const handleSearch = (e) => {
             return { score: score, views: views };
         };
 
+        const sanitizeCoverUrl = function(url) {
+            if (!url || typeof url !== "string") return "";
+            const trimmed = url.trim();
+            if (!trimmed) return "";
+            
+            // Filter bad/broken domains
+            if (trimmed.includes("serveproxy.com")) return "";
+            
+            // Convert HTTP → HTTPS for known CDNs
+            if (trimmed.startsWith("http://pic") && trimmed.includes("iqiyipic.com")) {
+                return trimmed.replace("http://", "https://");
+            }
+            if (trimmed.startsWith("http://m.ykimg.com")) {
+                return trimmed.replace("http://", "https://");
+            }
+            
+            return trimmed;
+        };
+
         const info = e.requestInfo();
 
         // 1. Strict validation of query parameters & body keys
@@ -124,7 +143,7 @@ const handleSearch = (e) => {
                     rawItems.push({
                         id: String(it.id),
                         title: String(it.title || ""),
-                        cover: String(it.thumbnail || ""),
+                        cover: sanitizeCoverUrl(it.thumbnail),
                         type: "drama",
                         source: "KissKH",
                         episode_info: epCount,
@@ -156,7 +175,7 @@ const handleSearch = (e) => {
                     rawItems.push({
                         id: String(itemId),
                         title: String(it.title || ""),
-                        cover: String(it.cover_v || it.cover || it.cover_h || ""),
+                        cover: sanitizeCoverUrl(it.cover_v || it.cover || it.cover_h),
                         type: "drama",
                         source: "WeTV",
                         episode_info: String(it.episode_info || ""),
@@ -192,7 +211,7 @@ const handleSearch = (e) => {
                     rawItems.push({
                         id: String(itemId),
                         title: String(it.title || ""),
-                        cover: String(it.cover || ""),
+                        cover: sanitizeCoverUrl(it.cover),
                         type: itemType,
                         source: "MovieBox",
                         episode_info: String(it.release_date || ""),
@@ -234,7 +253,7 @@ const handleSearch = (e) => {
                     rawItems.push({
                         id: String(itemId),
                         title: String(it.title || ""),
-                        cover: String(it.cover_portrait || it.cover || ""),
+                        cover: sanitizeCoverUrl(it.cover_portrait || it.cover),
                         type: "drama",
                         source: "Viu",
                         episode_info: epInfo,
@@ -272,7 +291,7 @@ const handleSearch = (e) => {
                     rawItems.push({
                         id: String(itemId),
                         title: String(it.name || it.title || ""),
-                        cover: String(it.cover || it.vertical_cover || ""),
+                        cover: sanitizeCoverUrl(it.cover || it.vertical_cover),
                         type: "short_drama",
                         source: "FreeReels",
                         episode_info: epCount,
@@ -316,7 +335,7 @@ const handleSearch = (e) => {
                     rawItems.push({
                         id: String(it.id),
                         title: String(it.name || it.title || ""),
-                        cover: String(it.cover || it.banner || ""),
+                        cover: sanitizeCoverUrl(it.cover || it.banner),
                         type: "drama",
                         source: "iQIYI",
                         episode_info: epCount,
@@ -406,7 +425,7 @@ const handleSearch = (e) => {
                         rawItems.push({
                             id: String(itemId),
                             title: String(it.title || it.name || ""),
-                            cover: String(it.cover || it.poster || ""),
+                            cover: sanitizeCoverUrl(it.cover || it.poster),
                             type: String(it.type || effectiveContentType || "drama"),
                             source: String(it.source || canonicalId),
                             episode_info: epCount,

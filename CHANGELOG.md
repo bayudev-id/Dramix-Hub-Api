@@ -11,6 +11,15 @@ Semua perubahan pada **Dramix Hub API (Gateway)** dicatat dalam dokumen ini meng
   - Posisi 1-7: WeTV, MovieBox, VIU, KissKH, iQIYI, Youku, FreeReels
   - Provider sisanya diurutkan alfabetis
   - Memastikan konsistensi urutan di seluruh aplikasi (Home, Search, Player).
+- **Search Pagination Support (`has_more`)**: Menambahkan field `has_more` ke response `/api/modelles/search` dengan strategi per-provider:
+  - **WeTV**: Calculate dari `total_results` (page * 10 < total)
+  - **MovieBox**: Consume `pager.has_more` dari upstream
+  - **iQIYI**: Consume `data.has_more` dari upstream
+  - **FreeReels**: Consume `data.page_info.has_more` dari upstream
+  - **VIU**: Heuristic `items.length > 0` (upstream tidak expose pagination)
+  - **KissKH**: Default `false` (return full array 1 halaman)
+  - **CineTv**: Default `false` (category search tanpa pagination)
+  - **CineFlow Hub**: Consume `data.has_more` jika ada, else `false`
 
 ### Fixed
 - **Search Portrait Cover Availability**: Audit endpoint `/api/modelles/search` untuk 24 provider. Hasil:

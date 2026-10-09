@@ -102,6 +102,7 @@ const handleSearch = (e) => {
         const effectiveContentType = contentType || (providerContentType === "short_drama" ? "short_drama" : "movie_tv");
 
         let rawItems = [];
+        let hasMore = false;
 
         // 1. KissKH (Port 7403)
         if (normalizedId === "kisskh") {
@@ -166,6 +167,10 @@ const handleSearch = (e) => {
                     });
                 }
             }
+            // WeTV: calculate has_more from total_results
+            const totalResults = d.total_results || 0;
+            const pageSize = 10;
+            hasMore = (pageNum * pageSize) < totalResults;
         }
         // 3. MovieBox (Port 7404)
         else if (normalizedId === "moviebox") {
@@ -197,6 +202,10 @@ const handleSearch = (e) => {
                         tags: Array.isArray(it.genre) ? it.genre : []
                     });
                 }
+            }
+            // MovieBox: consume pager.has_more
+            if (res.json && res.json.pager && typeof res.json.pager.has_more === "boolean") {
+                hasMore = res.json.pager.has_more;
             }
         }
         // 4. Viu (Port 7405)
@@ -236,6 +245,8 @@ const handleSearch = (e) => {
                     });
                 }
             }
+            // VIU: heuristic - if items returned, assume has_more (VIU doesn't expose pagination)
+            hasMore = list.length > 0;
         }
         // 5. FreeReels (Port 7406)
         else if (normalizedId === "freereels") {
@@ -271,6 +282,10 @@ const handleSearch = (e) => {
                         tags: Array.isArray(it.tags) ? it.tags : []
                     });
                 }
+            }
+            // FreeReels: consume page_info.has_more
+            if (res.json && res.json.data && res.json.data.page_info && typeof res.json.data.page_info.has_more === "boolean") {
+                hasMore = res.json.data.page_info.has_more;
             }
         }
         // 6. iQIYI (Port 7407)
@@ -312,6 +327,10 @@ const handleSearch = (e) => {
                     });
                 }
             }
+            // iQIYI: consume data.has_more
+            if (res.json && res.json.data && typeof res.json.data.has_more === "boolean") {
+                hasMore = res.json.data.has_more;
+            }
         }
         // 7. CineTv (Live TV Channel Filter)
         else if (normalizedId === "cinetv") {
@@ -348,6 +367,8 @@ const handleSearch = (e) => {
                 }
                 if (rawItems.length >= 20) break;
             }
+            // CineTv: no pagination support (category search only)
+            hasMore = false;
         }
         // 8. CineFlow Hub Upstream (Port 7401 - 17 Provider)
         else {
@@ -396,6 +417,13 @@ const handleSearch = (e) => {
                         });
                     }
                 }
+            }
+
+            // CineFlow: consume upstream has_more if available, else default false
+            if (res.statusCode === 200 && res.json && res.json.data && typeof res.json.data.has_more === "boolean") {
+                hasMore = res.json.data.has_more;
+            } else {
+                hasMore = false;
             }
 
             // Fallback jika upstream search mengembalikan 0 hasil: query categories/videos
@@ -480,6 +508,7 @@ const handleSearch = (e) => {
                 '"model_id":' + JSON.stringify(canonicalId) + "," +
                 '"q":' + JSON.stringify(q) + "," +
                 '"page":' + pageNum + "," +
+                '"has_more":' + (hasMore ? "true" : "false") + "," +
                 '"items":[' + itemStrings.join(",") + "]" +
             "}" +
         "}";

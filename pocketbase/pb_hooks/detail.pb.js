@@ -608,15 +608,41 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             }
 
             let hasVip = Boolean(seriesMeta.is_free_premium_time === 0);
+            let dramaTitle = String(seriesMeta.name || "").trim();
+            if (!dramaTitle && rawProducts.length > 0 && rawProducts[0].synopsis) {
+                dramaTitle = String(rawProducts[0].synopsis).replace(/\s*-\s*Episode\s*\d+.*$/i, "").trim();
+            }
+
             const episodes = [];
             for (let i = 0; i < rawProducts.length; i++) {
                 const ep = rawProducts[i];
-                const epNum = parseInt(ep.number, 10) || (i + 1);
+                const rawNum = parseInt(ep.number, 10);
+                const epNum = !isNaN(rawNum) ? rawNum : (i + 1);
                 const isEpVip = Boolean(ep.is_free_premium_time === 0 || ep.user_level > 1 || ep.premium_time > 0);
                 if (isEpVip) hasVip = true;
+
+                // Format: Episode <num> - <Nama Drama>
+                let epTitle = "Episode " + epNum;
+                const syn = String(ep.synopsis || "").trim();
+                let subtitleExtra = "";
+
+                if (syn) {
+                    const matchWithSub = syn.match(/^(?:.*?)\s*-\s*Episode\s*\d+\s*(?:[-:]\s*(.+))?$/i);
+                    if (matchWithSub && matchWithSub[1]) {
+                        subtitleExtra = matchWithSub[1].trim();
+                    }
+                }
+
+                if (dramaTitle) {
+                    epTitle += " - " + dramaTitle;
+                }
+                if (subtitleExtra) {
+                    epTitle += " - " + subtitleExtra;
+                }
+
                 episodes.push({
                     id: String(ep.product_id),
-                    title: String(ep.synopsis || ("Episode " + epNum)),
+                    title: epTitle,
                     number: epNum,
                     cover: String(ep.cover_image_url || seriesMeta.cover_landscape_image_url || ""),
                     duration_seconds: 0,
@@ -635,7 +661,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
 
             detail = {
                 id: String(seriesMeta.series_id || contentId),
-                title: String(seriesMeta.name || (rawProducts[0] && rawProducts[0].synopsis) || ""),
+                title: String(dramaTitle || seriesMeta.name || (rawProducts[0] && rawProducts[0].synopsis) || ""),
                 cover: sanitizeCoverUrl(String(seriesMeta.cover_landscape_image_url || seriesMeta.cover_portrait_image_url || (rawProducts[0] && rawProducts[0].cover_image_url) || "")),
                 description: String(seriesMeta.description || ""),
                 type: isMovie ? "movie" : "drama",

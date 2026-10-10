@@ -132,9 +132,8 @@ async def get_category_list(request: Request):
     
     is_english = str(lang) == "3" or str(lang).lower().startswith("en")
     
-    # Mapped 14 categories
+    # Mapped categories (excluding Trailers)
     categories = [
-        {"title_id": "Trailers", "title_en": "Trailers", "opId": "579", "type": "SUBJECTS_MOVIE"},
         {"title_id": "Viu Original", "title_en": "Viu Original", "opId": "571", "type": "SUBJECTS_MOVIE"},
         {"title_id": "Drama Korea", "title_en": "Korean Drama", "opId": "549", "type": "SUBJECTS_MOVIE"},
         {"title_id": "Variety Show Korea", "title_en": "Korean Variety Show", "opId": "550", "type": "SUBJECTS_MOVIE"},

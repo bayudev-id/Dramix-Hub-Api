@@ -128,10 +128,15 @@ routerAdd("GET", "/api/modelles/categories", (e) => {
             for (let i = 0; i < raw.length; i++) {
                 const it = raw[i];
                 const catId = it.category_id || it.opId;
+                const catTitle = String(it.title || "").trim();
+                // Sembunyikan kategori Trailer / Trailers
+                if (catTitle.toLowerCase().indexOf("trailer") !== -1 || String(catId) === "579") {
+                    continue;
+                }
                 if (catId) {
                     items.push({
                         id: String(catId),
-                        name: String(it.title)
+                        name: catTitle
                     });
                 }
             }

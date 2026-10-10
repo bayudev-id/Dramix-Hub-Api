@@ -21,6 +21,9 @@ Semua perubahan pada **Dramix Hub API (Gateway)** dicatat dalam dokumen ini meng
   - Memperbarui dokumentasi registry port di `PORTS.md`, `README.md`, dan panduan troubleshooting.
 
 ### Added
+- **PocketBase Default Providers Seed Migration (`pb_migrations/1791503857_seed_providers.js`)**:
+  - Menambahkan migrasi otomatis PocketBase untuk menyemai (seed) 24 provider aktif (WeTV, MovieBox, Viu, KissKH, iQIYI, FreeReels, Anichin, NetShort, dll.) ke koleksi `providers`.
+  - Mengintegrasikan eksekusi otomatis `pocketbase migrate up` ke dalam `deploy.sh` dan `start_all.bat` sehingga instalasi baru di server/Mini PC langsung memiliki data provider lengkap tanpa database kosong.
 - **VIU HLS Manifest & AES-128 DRM Key Proxy (`pb_hooks/viu_proxy.pb.js`)**:
   - Proxy HLS playlist (`/api/modelles/viu/vuclip_vod.m3u8` dan `/api/modelles/viu/vuclip_airplay.m3u8`) melalui PocketBase port 8090.
   - Proxy AES-128 DRM key endpoint (`/api/modelles/viu/getkey`) dengan autentikasi internal API key terinjeksi di sisi gateway.

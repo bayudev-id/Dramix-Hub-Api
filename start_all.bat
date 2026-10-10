@@ -16,6 +16,7 @@ if exist "%~dp0.venv\Scripts\python.exe" (
 echo.
 
 echo [1/8] Menjalankan PocketBase (Port 8090)...
+"%~dp0pocketbase\pocketbase.exe" migrate up --dir="%~dp0pocketbase\pb_data" --migrationsDir="%~dp0pocketbase\pb_migrations"
 start "Dramix [8090] PocketBase" /D "%~dp0pocketbase" cmd /k "pocketbase.exe serve"
 
 timeout /t 2 /nobreak >nul

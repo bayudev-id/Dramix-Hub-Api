@@ -110,6 +110,10 @@ else
     chmod +x "$PB_BIN"
 fi
 
+log_info "Applying PocketBase database migrations and default data..."
+(cd "$TARGET_DIR/pocketbase" && ./pocketbase migrate up)
+log_success "PocketBase migrations up to date."
+
 # 5. Setup Unified Python Virtual Environment
 log_info "Setting up unified Python virtual environment (.venv)..."
 if [ ! -d ".venv" ]; then

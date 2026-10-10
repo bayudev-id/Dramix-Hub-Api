@@ -61,9 +61,9 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                     }
                     return u;
                 }
-                // Format 2: vcover-vt-pic -> switch to /92 (static pre-rendered thumbnail on Tencent CDN, ~10KB, instant cache hit)
+                // Format 2: vcover-vt-pic -> switch to /220 (official WeTV mobile listing thumbnail, pre-cached on CloudFront edge CGK/SIN, 70-100ms, ~35KB)
                 if (url.indexOf("vcover-vt-pic") !== -1) {
-                    return url.replace(/\/\d+$/, "/92");
+                    return url.replace(/\/\d+$/, "/220");
                 }
             }
             

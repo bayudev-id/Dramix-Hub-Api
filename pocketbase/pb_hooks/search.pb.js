@@ -83,7 +83,7 @@ const handleSearch = (e) => {
                     return u;
                 }
                 if (finalUrl.indexOf("vcover-vt-pic") !== -1) {
-                    return finalUrl.replace(/\/\d+$/, "/92");
+                    return finalUrl.replace(/\/\d+$/, "/220");
                 }
             }
             // Viu: Akamai Image Manager on edge - resize to 200px width

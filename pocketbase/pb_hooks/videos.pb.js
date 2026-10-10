@@ -51,19 +51,16 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
             }
             
             // WeTV: Tencent Cloud CDN edge optimizer (imageMogr2) -> strict < 15KB WebP
-            if (source === "wetv" || url.indexOf("wetvinfo.com") !== -1) {
-                // Format 1: puui.wetvinfo.com (Tencent COS) -> downscale + WebP quality 80 (~6-8KB)
+            if (source === "wetv" || url.indexOf("wetvinfo.com") !== -1 || url.indexOf("qpic.cn") !== -1) {
+                // Format 1: puui.wetvinfo.com (Tencent COS) -> keep original filename, apply edge imageMogr2 downscale + WebP quality 80 (~6-8KB)
                 if (url.indexOf("puui.wetvinfo.com") !== -1) {
-                    let u = url.replace(/_\d+(\.\w+)$/, "_218304$1");
-                    const sep = (u.indexOf("?") === -1) ? "?" : "&";
-                    if (u.indexOf("imageMogr2") === -1) {
-                        u = u + sep + "imageMogr2/thumbnail/150x/format/webp/quality/80";
-                    }
-                    return u;
+                    const cleanUrl = url.split("?")[0];
+                    return cleanUrl + "?imageMogr2/thumbnail/150x/format/webp/quality/80";
                 }
                 // Format 2: vcover-vt-pic -> switch to /220 (official WeTV mobile listing thumbnail, pre-cached on CloudFront edge CGK/SIN, 70-100ms, ~35KB)
                 if (url.indexOf("vcover-vt-pic") !== -1) {
-                    return url.replace(/\/\d+$/, "/220");
+                    const cleanUrl = url.split("?")[0];
+                    return cleanUrl.replace(/\/\d+$/, "/220");
                 }
             }
             

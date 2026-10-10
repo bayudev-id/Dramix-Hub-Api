@@ -73,17 +73,14 @@ const handleSearch = (e) => {
                 return finalUrl.replace(/w_\d+_and_h\d+/, "w300");
             }
             // WeTV
-            if (finalUrl.indexOf("wetvinfo.com") !== -1) {
+            if (finalUrl.indexOf("wetvinfo.com") !== -1 || finalUrl.indexOf("qpic.cn") !== -1) {
                 if (finalUrl.indexOf("puui.wetvinfo.com") !== -1) {
-                    let u = finalUrl.replace(/_\d+(\.\w+)$/, "_218304$1");
-                    const sep = (u.indexOf("?") === -1) ? "?" : "&";
-                    if (u.indexOf("imageMogr2") === -1) {
-                        u = u + sep + "imageMogr2/thumbnail/150x/format/webp/quality/80";
-                    }
-                    return u;
+                    const cleanUrl = finalUrl.split("?")[0];
+                    return cleanUrl + "?imageMogr2/thumbnail/150x/format/webp/quality/80";
                 }
                 if (finalUrl.indexOf("vcover-vt-pic") !== -1) {
-                    return finalUrl.replace(/\/\d+$/, "/220");
+                    const cleanUrl = finalUrl.split("?")[0];
+                    return cleanUrl.replace(/\/\d+$/, "/220");
                 }
             }
             // Viu: Akamai Image Manager on edge - resize to 200px width

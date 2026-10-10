@@ -445,10 +445,54 @@ routerAdd("GET", "/api/modelles/source", (e) => {
 
             for (let i = 0; i < rawSubs.length; i++) {
                 const s = rawSubs[i];
+                let subLang = String(s.lang || "");
+                let subLabel = String(s.name || s.label || s.lang || "");
+                let subUrl = String(s.url || "");
+
+                if (canonicalId === "youku") {
+                    if (subLabel === "马来语" || subUrl.indexOf("synced_ms_") !== -1 || subUrl.indexOf("_ms_") !== -1) {
+                        subLang = "ms";
+                        subLabel = "Malay";
+                    } else if (subLabel === "印尼语" || subUrl.indexOf("synced_id_") !== -1 || subUrl.indexOf("_id_") !== -1) {
+                        subLang = "id";
+                        subLabel = "Indonesian";
+                    } else if (subLabel === "印度" || subUrl.indexOf("synced_in_") !== -1 || subUrl.indexOf("_in_") !== -1) {
+                        subLang = "hi";
+                        subLabel = "Hindi";
+                    } else if (subLabel === "英语" || subUrl.indexOf("synced_en_") !== -1) {
+                        subLang = "en";
+                        subLabel = "English";
+                    } else if (subLabel === "繁体中文" || subUrl.indexOf("synced_cht_") !== -1) {
+                        subLang = "zh-Hant";
+                        subLabel = "Mandarin (Tradisional)";
+                    } else if (subLabel === "中文" || subUrl.indexOf("synced_default_") !== -1) {
+                        subLang = "zh-Hans";
+                        subLabel = "Mandarin (Sederhana)";
+                    } else if (subLabel === "韩语" || subUrl.indexOf("synced_kr_") !== -1) {
+                        subLang = "ko";
+                        subLabel = "Korean";
+                    } else if (subLabel === "西班牙语" || subUrl.indexOf("synced_es_") !== -1) {
+                        subLang = "es";
+                        subLabel = "Spanish";
+                    } else if (subLabel === "葡萄牙语" || subUrl.indexOf("synced_po_") !== -1) {
+                        subLang = "pt";
+                        subLabel = "Portuguese";
+                    } else if (subLabel === "泰国语" || subLabel === "泰语" || subUrl.indexOf("synced_th_") !== -1) {
+                        subLang = "th";
+                        subLabel = "Thai";
+                    } else if (subLabel === "阿语" || subLabel === "阿拉伯语" || subUrl.indexOf("synced_ar_") !== -1) {
+                        subLang = "ar";
+                        subLabel = "Arabic";
+                    } else if (subLabel === "越南语" || subUrl.indexOf("synced_vi_") !== -1) {
+                        subLang = "vi";
+                        subLabel = "Vietnamese";
+                    }
+                }
+
                 subtitles.push({
-                    lang: String(s.lang || ""),
-                    label: String(s.name || s.label || s.lang || ""),
-                    url: String(s.url || "")
+                    lang: subLang,
+                    label: subLabel,
+                    url: subUrl
                 });
             }
         }

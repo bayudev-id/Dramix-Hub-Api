@@ -39,22 +39,34 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             let finalUrl = url.trim();
             if (!finalUrl) return "";
             
-            // 1. Extract from serveproxy wrapper
+            // 1. Clean malformed double slashes in protocol
+            finalUrl = finalUrl.replace(/^(https?:\/\/)\/+/i, "$1");
+            
+            // 2. Extract from serveproxy wrapper
             if (finalUrl.indexOf("serveproxy.com") !== -1 && finalUrl.indexOf("?url=") !== -1) {
                 const urlParamIndex = finalUrl.indexOf("?url=");
                 if (urlParamIndex !== -1) {
-                    const extractedUrl = finalUrl.substring(urlParamIndex + 5);
+                    let extractedUrl = finalUrl.substring(urlParamIndex + 5);
+                    const nextAmp = extractedUrl.indexOf("&");
+                    if (nextAmp !== -1) extractedUrl = extractedUrl.substring(0, nextAmp);
+                    if (extractedUrl.indexOf("%3A") !== -1 || extractedUrl.indexOf("%2F") !== -1) {
+                        try { extractedUrl = decodeURIComponent(extractedUrl); } catch (e) {}
+                    }
                     if (extractedUrl.startsWith("http://") || extractedUrl.startsWith("https://")) {
                         finalUrl = extractedUrl;
                     }
                 }
             }
             
-            // 2. Extract from wsrv.nl wrapper if already wrapped by upstream
+            // 3. Extract from wsrv.nl wrapper if already wrapped by upstream
             if (finalUrl.indexOf("wsrv.nl") !== -1 && finalUrl.indexOf("?url=") !== -1) {
                 const urlParamIndex = finalUrl.indexOf("?url=");
                 if (urlParamIndex !== -1) {
                     let extracted = finalUrl.substring(urlParamIndex + 5);
+                    const nextAmp = extracted.indexOf("&");
+                    if (nextAmp !== -1) {
+                        extracted = extracted.substring(0, nextAmp);
+                    }
                     if (extracted.indexOf("%3A") !== -1 || extracted.indexOf("%2F") !== -1) {
                         try {
                             extracted = decodeURIComponent(extracted);
@@ -67,7 +79,9 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 }
             }
             
-            // 3. Convert HTTP → HTTPS for known CDNs
+            finalUrl = finalUrl.replace(/^(https?:\/\/)\/+/i, "$1");
+            
+            // 4. Convert HTTP → HTTPS for known CDNs
             if (finalUrl.startsWith("http://pic") && finalUrl.indexOf("iqiyipic.com") !== -1) {
                 finalUrl = finalUrl.replace("http://", "https://");
             }
@@ -80,13 +94,29 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             
             const source = (providerSource || "").toLowerCase();
             
-            // 4. MovieBox: Alibaba Cloud OSS CDN - resize to 240px width + WebP format on edge (~10-15KB)
+            // 5. WordPress Photon CDN (*.wp.com / i0.wp.com, i1.wp.com, etc.):
+            // wsrv.nl returns 400 for wp.com. Automattic Photon is already an edge resizer.
+            // ?w=240 produces ~8-18KB WebP/JPEG directly from Automattic edge.
+            if (finalUrl.indexOf(".wp.com/") !== -1 || finalUrl.startsWith("https://wp.com/") || finalUrl.startsWith("http://wp.com/")) {
+                if (finalUrl.startsWith("http://")) {
+                    finalUrl = finalUrl.replace("http://", "https://");
+                }
+                if (finalUrl.indexOf("?") !== -1) {
+                    if (finalUrl.indexOf("w=") === -1 && finalUrl.indexOf("resize=") === -1) {
+                        return finalUrl + "&w=240";
+                    }
+                    return finalUrl;
+                }
+                return finalUrl + "?w=240";
+            }
+            
+            // 6. MovieBox: Alibaba Cloud OSS CDN - resize to 240px width + WebP format on edge (~10-15KB)
             if (source === "moviebox" || finalUrl.indexOf("pbcdnw.aoneroom.com") !== -1) {
                 const cleanUrl = finalUrl.split("?")[0];
                 return cleanUrl + "?x-oss-process=image/resize,w_240,m_lfit/format,webp";
             }
             
-            // 5. WeTV: Tencent Cloud CDN edge optimizer (imageMogr2) -> strict < 15KB WebP
+            // 7. WeTV: Tencent Cloud CDN edge optimizer (imageMogr2) -> strict < 15KB WebP
             if (source === "wetv" || finalUrl.indexOf("wetvinfo.com") !== -1 || finalUrl.indexOf("qpic.cn") !== -1) {
                 const cleanUrl = finalUrl.split("?")[0];
                 // Format 1: vcover-vt-pic -> switch to /220 (official WeTV mobile listing thumbnail, pre-cached on CloudFront edge CGK/SIN, 70-100ms, ~35KB)
@@ -101,20 +131,26 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 return cleanUrl + "?imageMogr2/thumbnail/150x/format/webp/quality/80";
             }
             
-            // 6. Viu: Akamai Image Manager on edge - resize to 200px width (~6-18KB, avg 15.9KB, -96% bandwidth)
+            // 8. Viu: Akamai Image Manager on edge - resize to 200px width (~6-18KB, avg 15.9KB, -96% bandwidth)
             if (source === "viu" || finalUrl.indexOf("prod-images.viu.com") !== -1) {
                 const cleanUrl = finalUrl.split("?")[0];
                 return cleanUrl + "?im=Resize,width=200";
             }
             
-            // 7. TMDB: media.themoviedb.org / www.themoviedb.org / image.tmdb.org edge resizing (~6-14KB)
+            // 9. TMDB: media.themoviedb.org / www.themoviedb.org / image.tmdb.org edge resizing (~6-14KB)
             if (finalUrl.indexOf("themoviedb.org") !== -1 || finalUrl.indexOf("image.tmdb.org") !== -1) {
                 let tmdbUrl = finalUrl.replace(/https?:\/\/(?:www|media)\.themoviedb\.org/, "https://media.themoviedb.org");
                 tmdbUrl = tmdbUrl.replace(/\/t\/p\/[^\/]+/, "/t/p/w250_and_h141_face");
                 return tmdbUrl;
             }
             
-            // 8. KissKH / FragranceCDN / KissImge / Viki / Netflix / other unoptimized KissKH external covers:
+            // 10. YouTube thumbnails (i.ytimg.com): mqdefault (~20KB) or via wsrv.nl (~8KB)
+            if (finalUrl.indexOf("i.ytimg.com") !== -1) {
+                let ytUrl = finalUrl.replace(/\/(maxresdefault|hqdefault)\.jpg/, "/mqdefault.jpg");
+                return "https://wsrv.nl/?url=" + encodeURIComponent(ytUrl) + "&w=240&output=webp&q=80";
+            }
+            
+            // 11. KissKH / FragranceCDN / KissImge / Viki / Netflix / other unoptimized KissKH external covers:
             // Route through Cloudflare edge resizer (wsrv.nl) to convert to 240px WebP quality 80 (~4-8KB)
             if (source === "kisskh" || 
                 finalUrl.indexOf("fragrancecdn1.site") !== -1 || 
@@ -132,6 +168,8 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 return "https://wsrv.nl/?url=" + encodeURIComponent(targetUrl) + "&w=240&output=webp&q=80";
             }
             
+            // FreeReels: already ~430B
+            // iQIYI: Already contains dimension tags in URL
             return finalUrl;
         };
 
@@ -982,7 +1020,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             '"data":{' +
                 '"id":' + JSON.stringify(detail.id) + "," +
                 '"title":' + JSON.stringify(detail.title) + "," +
-                '"cover":' + JSON.stringify(sanitizeCoverUrl(detail.cover)) + "," +
+                '"cover":' + JSON.stringify(detail.cover) + "," +
                 '"description":' + JSON.stringify(detail.description || "") + "," +
                 '"type":' + JSON.stringify(detail.type || "drama") + "," +
                 '"source":' + JSON.stringify(detail.source) + "," +

@@ -416,12 +416,29 @@ routerAdd("GET", "/api/modelles/source", (e) => {
 
             for (let i = 0; i < rawStreams.length; i++) {
                 const s = rawStreams[i];
+                let streamUrl = String(s.url || "");
+                if (canonicalId === "youku" && s.master_url) {
+                    streamUrl = String(s.master_url);
+                } else if (!streamUrl && s.master_url) {
+                    streamUrl = String(s.master_url);
+                }
+
+                let drmObj = s.drm || null;
+                if (drmObj && canonicalId === "youku") {
+                    if (drmObj.license_params) {
+                        drmObj.license_params.drmType = "widevine";
+                    }
+                    if (drmObj.license_url) {
+                        drmObj.license_url = drmObj.license_url.replace(/drmType=[^&]+/, "drmType=widevine");
+                    }
+                }
+
                 streams.push({
                     quality: String(s.quality || "Auto"),
                     format: String(s.format || "m3u8").toLowerCase(),
-                    url: String(s.url || s.master_url || ""),
+                    url: streamUrl,
                     is_drm: Boolean(s.is_drm),
-                    drm: s.drm || null,
+                    drm: drmObj,
                     headers: s.headers || null
                 });
             }

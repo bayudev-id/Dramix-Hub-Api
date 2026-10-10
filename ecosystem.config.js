@@ -85,6 +85,15 @@ module.exports = {
       env: { PORT: 6107, SERVER_PORT: 6107, HOST: "127.0.0.1", SERVER_HOST: "127.0.0.1" },
       autorestart: true,
       watch: false
+    },
+    {
+      name: "dramix-image-proxy",
+      cwd: "./services/image_proxy",
+      script: "app.py",
+      interpreter: pythonInterpreter,
+      env: { PORT: 6108, HOST: "127.0.0.1" },
+      autorestart: true,
+      watch: false
     }
   ]
 };

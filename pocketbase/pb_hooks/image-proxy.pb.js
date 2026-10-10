@@ -44,7 +44,7 @@ routerAdd("GET", "/api/modelles/image", (e) => {
         // Proxy to moviebox_api image resize service
         const encodedUrl = encodeURIComponent(url);
         const res = $http.send({
-            url: "http://127.0.0.1:6104/api/resize-image?url=" + encodedUrl + "&w=" + width,
+            url: "http://127.0.0.1:6108/api/resize-image?url=" + encodedUrl + "&w=" + width,
             method: "GET",
             timeout: 15
         });

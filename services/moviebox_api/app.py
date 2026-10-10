@@ -1,16 +1,9 @@
 from fastapi import FastAPI, Request, Query
-from fastapi.responses import JSONResponse, StreamingResponse, HTMLResponse, Response
+from fastapi.responses import JSONResponse, StreamingResponse, HTMLResponse
 import dataclasses
 import requests
 from moviebox import MovieBox
 from models.home import SubjectMovie
-import io
-
-# Import Pillow for image resizing
-try:
-    from PIL import Image
-except ImportError:
-    Image = None
 
 app = FastAPI(title="MovieBox Local API Wrapper")
 
@@ -1343,87 +1336,6 @@ def get_captions(subjectId: str, streamId: str, format: str = "MP4", detailPath:
             "provider": "moviebox",
             "data": None
         })
-
-@app.get("/api/resize-image")
-def resize_image(url: str = Query(...), w: int = Query(150, ge=50, le=800)):
-    """
-    Image proxy: download, resize to thumbnail (max width {w}px), convert to WebP.
-    Returns <15KB per image for typical covers.
-    """
-    if Image is None:
-        # Fallback: proxy without resize if Pillow not installed
-        try:
-            resp = requests.get(url, timeout=10, stream=True)
-            resp.raise_for_status()
-            return StreamingResponse(
-                resp.iter_content(chunk_size=8192),
-                media_type=resp.headers.get("Content-Type", "image/jpeg"),
-                headers={
-                    "Cache-Control": "public, max-age=86400, immutable",
-                    "X-Proxy": "Dramix-Image-Proxy (passthrough)"
-                }
-            )
-        except Exception as e:
-            return JSONResponse(status_code=502, content={"error": str(e)})
-
-    try:
-        # Download with streaming
-        resp = requests.get(url, timeout=10, stream=True)
-        resp.raise_for_status()
-        
-        # Read image data
-        img_data = io.BytesIO()
-        for chunk in resp.iter_content(chunk_size=32768):
-            if chunk:
-                img_data.write(chunk)
-        img_data.seek(0)
-        
-        # Open and convert to RGB (handle RGBA/P modes)
-        img = Image.open(img_data)
-        if img.mode in ("RGBA", "LA", "P"):
-            bg = Image.new("RGB", img.size, (0, 0, 0))
-            if img.mode == "P":
-                img = img.convert("RGBA")
-            bg.paste(img, mask=img.split()[-1] if img.mode == "RGBA" else None)
-            img = bg
-        elif img.mode != "RGB":
-            img = img.convert("RGB")
-        
-        # Resize maintaining aspect ratio
-        orig_w, orig_h = img.size
-        if orig_w > w:
-            ratio = w / orig_w
-            new_h = int(orig_h * ratio)
-            img = img.resize((w, new_h), Image.LANCZOS)
-        
-        # Save as WebP with quality 80
-        output = io.BytesIO()
-        img.save(output, format="WEBP", quality=80, method=6)
-        output.seek(0)
-        img_size_kb = output.getbuffer().nbytes / 1024
-        
-        return Response(
-            content=output.getvalue(),
-            media_type="image/webp",
-            headers={
-                "Cache-Control": "public, max-age=86400, immutable",
-                "X-Proxy": "Dramix-Image-Proxy",
-                "X-Original-Size": str(resp.headers.get("Content-Length", "unknown")),
-                "X-Resized-Size": f"{img_size_kb:.1f}KB"
-            }
-        )
-    except Exception as e:
-        # Fallback: pass through original
-        try:
-            resp = requests.get(url, timeout=10, stream=True)
-            resp.raise_for_status()
-            return StreamingResponse(
-                resp.iter_content(chunk_size=8192),
-                media_type=resp.headers.get("Content-Type", "image/jpeg"),
-            )
-        except:
-            return JSONResponse(status_code=502, content={"error": str(e)})
-
 
 @app.get("/server-info")
 def get_server_info():

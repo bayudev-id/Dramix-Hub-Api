@@ -140,7 +140,7 @@ if command -v ufw >/dev/null 2>&1; then
         log_info "UFW detected. Allowing port 8090/tcp and denying internal ports from LAN..."
         sudo ufw allow 8090/tcp comment 'Dramix Gateway Port'
         # Defense in depth: Deny direct external connections to internal ports
-        for p in {6101..6107}; do
+        for p in {6101..6108}; do
             sudo ufw deny in to any port "$p" proto tcp comment "Block internal microservice $p" >/dev/null 2>&1 || true
         done
         log_success "UFW firewall rules applied."

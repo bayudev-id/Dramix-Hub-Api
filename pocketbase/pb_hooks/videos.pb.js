@@ -115,11 +115,16 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 return cleanUrl + "?im=Resize,width=200";
             }
             
-            // 9. TMDB: media.themoviedb.org / www.themoviedb.org / image.tmdb.org edge resizing (~6-14KB)
+            // 9. TMDB: image.tmdb.org edge resizing (~6-14KB)
             if (finalUrl.indexOf("themoviedb.org") !== -1 || finalUrl.indexOf("image.tmdb.org") !== -1) {
-                let tmdbUrl = finalUrl.replace(/https?:\/\/(?:www|media)\.themoviedb\.org/, "https://media.themoviedb.org");
-                tmdbUrl = tmdbUrl.replace(/\/t\/p\/[^\/]+/, "/t/p/w250_and_h141_face");
+                let tmdbUrl = finalUrl.replace(/https?:\/\/(?:www|media)\.themoviedb\.org/, "https://image.tmdb.org");
+                tmdbUrl = tmdbUrl.replace(/\/t\/p\/[^\/]+/, "/t/p/w185");
                 return tmdbUrl;
+            }
+
+            // 9.5. Imgur: native medium thumbnail (~12KB). wsrv.nl is blocked by Imgur (HTTP 429).
+            if (finalUrl.indexOf("i.imgur.com") !== -1) {
+                return finalUrl.replace(/https?:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)(\.[a-zA-Z]+)/, "https://i.imgur.com/$1m$2");
             }
             
             // 10. YouTube thumbnails (i.ytimg.com): mqdefault (~20KB) or via wsrv.nl (~8KB)

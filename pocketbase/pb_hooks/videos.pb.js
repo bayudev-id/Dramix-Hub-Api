@@ -61,14 +61,9 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                     }
                     return u;
                 }
-                // Format 2: vcover-vt-pic (Tencent COS) -> switch to /0 + imageMogr2 WebP (~6-8KB)
+                // Format 2: vcover-vt-pic -> switch to /92 (static pre-rendered thumbnail on Tencent CDN, ~10KB, instant cache hit)
                 if (url.indexOf("vcover-vt-pic") !== -1) {
-                    let u = url.replace(/\/\d+$/, "/0");
-                    const sep = (u.indexOf("?") === -1) ? "?" : "&";
-                    if (u.indexOf("imageMogr2") === -1) {
-                        u = u + sep + "imageMogr2/thumbnail/150x/format/webp/quality/80";
-                    }
-                    return u;
+                    return url.replace(/\/\d+$/, "/92");
                 }
             }
             

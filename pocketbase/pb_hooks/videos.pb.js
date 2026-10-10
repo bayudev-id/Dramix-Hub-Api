@@ -36,35 +36,46 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
             
             const source = (providerSource || "").toLowerCase();
             
-            // MovieBox: Alibaba OSS CDN - resize to 360px width, ~30-40KB from 200-800KB
-            if (source === "moviebox" || url.indexOf("pbcdnw.aoneroom.com") !== -1) {
-                if (url.indexOf("?") === -1) {
-                    return url + "?x-oss-process=image/resize,w_360,m_lfit";
-                } else {
-                    return url + "&x-oss-process=image/resize,w_360,m_lfit";
-                }
-            }
-            
-            // KissKH/TMDB: downscale from w_1000_and_h563 to w_342_and_h513, ~30-50KB
-            if (source === "kisskh" || url.indexOf("media.themoviedb.org") !== -1) {
-                return url.replace(/w_\d+_and_h\d+/, "w_342_and_h513");
-            }
-            
-            // WeTV: Optimize both CDN formats
+            // WeTV: rewrite through image proxy for <15KB WebP thumbnails
             if (source === "wetv" || url.indexOf("wetvinfo.com") !== -1) {
-                // Format 1: puui.wetvinfo.com with dimension suffix (_436608 -> _218304 = ~95KB)
-                if (url.indexOf("puui.wetvinfo.com") !== -1) {
-                    return url.replace(/_\d+(\.\w+)$/, "_218304$1");
-                }
-                // Format 2: vcover-vt-pic with size suffix (/0 -> /350 = ~85KB)
-                if (url.indexOf("vcover-vt-pic") !== -1) {
-                    return url.replace(/\/0$/, "/350");
-                }
+                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
             }
             
-            // Viu: Hash-based CDN, already optimized on their CDN
-            // iQIYI: URL already includes optimized dimensions
-            // FreeReels: already ~430B, minimal optimization needed
+            // iQIYI: rewrite to image proxy
+            if (source === "iqiyi" || url.indexOf("iqiyipic.com") !== -1) {
+                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
+            }
+            
+            // Viu: rewrite to image proxy
+            if (source === "viu") {
+                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
+            }
+            
+            // MovieBox: resize + proxy for WebP conversion
+            if (source === "moviebox" || url.indexOf("pbcdnw.aoneroom.com") !== -1) {
+                let optimizedUrl = url;
+                if (url.indexOf("?") === -1) {
+                    optimizedUrl = url + "?x-oss-process=image/resize,w_360,m_lfit";
+                } else {
+                    optimizedUrl = url + "&x-oss-process=image/resize,w_360,m_lfit";
+                }
+                return "/api/modelles/image?url=" + encodeURIComponent(optimizedUrl) + "&w=150";
+            }
+            
+            // KissKH/TMDB: rewrite to image proxy
+            if (source === "kisskh" || url.indexOf("media.themoviedb.org") !== -1) {
+                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
+            }
+            
+            // FreeReels: already ~430B, no optimization needed
+            if (source === "freereels") {
+                return url;
+            }
+            
+            // Default: rewrite through proxy for any remaining large covers
+            if (url.indexOf("http") === 0) {
+                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
+            }
             
             return url;
         };

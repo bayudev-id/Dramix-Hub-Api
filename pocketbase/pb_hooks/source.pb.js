@@ -57,6 +57,8 @@ routerAdd("GET", "/api/modelles/source", (e) => {
         let subtitles = [];
         let headers = {};
         let durationSeconds = 0;
+        let countdownUrl = null;
+        let isCountdown = false;
 
         // 1. KissKH (Port 6103)
         if (normalizedId === "kisskh") {
@@ -72,9 +74,20 @@ routerAdd("GET", "/api/modelles/source", (e) => {
             const rawStreams = Array.isArray(d.streams) ? d.streams : [];
             const rawSubs = Array.isArray(d.subtitles) ? d.subtitles : [];
 
+            if (d.is_countdown || d.countdown_url) {
+                isCountdown = true;
+                countdownUrl = String(d.countdown_url || "");
+                if (countdownUrl.indexOf("//") === 0) countdownUrl = "https:" + countdownUrl;
+            }
+
             for (let i = 0; i < rawStreams.length; i++) {
                 let u = String(rawStreams[i].url || "");
                 if (u.indexOf("//") === 0) u = "https:" + u;
+                if (u.indexOf("tickcounter.com") !== -1 || u.indexOf("countdown") !== -1) {
+                    isCountdown = true;
+                    if (!countdownUrl) countdownUrl = u;
+                    continue; // Skip adding to playable video streams
+                }
                 streams.push({
                     quality: String(rawStreams[i].quality || "Auto"),
                     format: String(rawStreams[i].format || "m3u8").toLowerCase(),
@@ -450,6 +463,8 @@ routerAdd("GET", "/api/modelles/source", (e) => {
                 '"episode_id":' + JSON.stringify(episodeId) + "," +
                 '"duration_seconds":' + durationSeconds + "," +
                 '"headers":' + JSON.stringify(headers) + "," +
+                '"countdown_url":' + (countdownUrl ? JSON.stringify(countdownUrl) : "null") + "," +
+                '"is_countdown":' + (isCountdown ? "true" : "false") + "," +
                 '"streams":[' + streamStrings.join(",") + "]," +
                 '"subtitles":[' + subtitleStrings.join(",") + "]" +
             "}" +

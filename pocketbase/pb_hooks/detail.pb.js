@@ -234,12 +234,30 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             const rawEps = Array.isArray(d.episodes) ? d.episodes : [];
             const episodes = [];
             const kisskhCover = sanitizeCoverUrl(String(d.thumbnail || ""), "KissKH");
+
+            // Sort episodes in ascending order so episode 1 (or 0) is always at the front
+            rawEps.sort(function(a, b) {
+                var numA = (a && a.number !== undefined && a.number !== null && !isNaN(Number(a.number)))
+                    ? Number(a.number)
+                    : 999999;
+                var numB = (b && b.number !== undefined && b.number !== null && !isNaN(Number(b.number)))
+                    ? Number(b.number)
+                    : 999999;
+                return numA - numB;
+            });
+
             for (let i = 0; i < rawEps.length; i++) {
                 const ep = rawEps[i];
+                const hasNum = (ep.number !== undefined && ep.number !== null && !isNaN(Number(ep.number)));
+                const epNum = hasNum ? Number(ep.number) : (i + 1);
+                const epTitle = (ep.title && String(ep.title).trim())
+                    ? String(ep.title).trim()
+                    : ("Episode " + (hasNum ? ep.number : (i + 1)));
+
                 episodes.push({
                     id: String(ep.id),
-                    title: "Episode " + (ep.number || (i + 1)),
-                    number: parseInt(ep.number, 10) || (i + 1),
+                    title: epTitle,
+                    number: Math.floor(epNum),
                     cover: kisskhCover,
                     duration_seconds: 0,
                     is_vip: false,

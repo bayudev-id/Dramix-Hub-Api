@@ -16,21 +16,32 @@ async function getUnifiedStream(req, res) {
       fetchFromKissKH(`/api/Sub/${id}`, req.query)
     ]);
 
-    // Format streams (KissKH usually provides one m3u8)
+    // Format streams or countdown timer
     const streams = [];
+    let countdownUrl = null;
+    let isCountdown = false;
+
     if (streamData && streamData.Video) {
-      streams.push({
-        url: streamData.Video,
-        quality: "Auto",
-        format: "m3u8"
-      });
+      const rawUrl = String(streamData.Video);
+      const isTimer = streamData.Type === 2 || 
+                      rawUrl.includes('tickcounter.com') || 
+                      rawUrl.includes('countdown');
+
+      if (isTimer) {
+        isCountdown = true;
+        countdownUrl = rawUrl.startsWith('//') ? `https:${rawUrl}` : rawUrl;
+      } else {
+        streams.push({
+          url: rawUrl,
+          quality: "Auto",
+          format: "m3u8"
+        });
+      }
     }
 
     // Format subtitles
     const subtitles = (Array.isArray(subData) ? subData : []).map(sub => ({
-
       url: sub.src,
-
       lang: sub.land,
       label: sub.label,
       default: sub.default || false
@@ -45,7 +56,9 @@ async function getUnifiedStream(req, res) {
       data: {
         streams,
         subtitles,
-        dubs: [] // KissKH doesn't separate dubs in this endpoint
+        dubs: [], // KissKH doesn't separate dubs in this endpoint
+        countdown_url: countdownUrl,
+        is_countdown: isCountdown
       }
     };
 

@@ -10,6 +10,7 @@ Dokumen ini mendokumentasikan secara komprehensif akar masalah (*root cause*), d
 3. [Kasus 3: Lisensi Freemium Berbasis Hardware Binding Anonim](#kasus-3-lisensi-freemium-berbasis-hardware-binding-anonim)
 4. [Kasus 4: Deterministic JSON Key Ordering pada PocketBase Hooks](#kasus-4-deterministic-json-key-ordering-pada-pocketbase-hooks)
 5. [Kasus 5: Arsitektur Multi-Service Port Orchestration & Single Unified Environment](#kasus-5-arsitektur-multi-service-port-orchestration--single-unified-environment)
+6. [Kasus 6: Sanitasi Status Koleksi Database untuk Pencegahan Provider Inaktif](#kasus-6-sanitasi-status-koleksi-database-untuk-pencegahan-provider-inaktif)
 
 ---
 
@@ -176,3 +177,45 @@ Gateway mengoperasikan 8 service secara bersamaan (PocketBase + 7 microservices)
    - `6107`: iQIYI API
 3. **Master Launcher (`start_all.bat` & `stop_all.bat`)**:
    Skrip otomatisasi yang mendeteksi virtual environment, menyalakan seluruh service secara terurut dengan timeout proteksi, dan menyediakan skrip pembunuhan proses instan berdasarkan alokasi port.
+
+---
+
+## Kasus 6: Sanitasi Status Koleksi Database untuk Pencegahan Provider Inaktif
+
+### Gejala Masalah
+Saat admin menonaktifkan suatu provider di tabel `providers` PocketBase (misal mengubah `status` dari `"active"` menjadi `"inactive"` untuk `dramaboxbaru` saat upstream API sedang offline atau diputus), entitas provider tersebut ternyata masih terpapar ke aplikasi klien Android melalui endpoint `/api/modelles/models`. Hal ini menyebabkan aplikasi klien merender tab/chip provider yang jika diklik menghasilkan HTTP 500/502 pada upstream query.
+
+### Akar Masalah (Root Cause)
+Pada `pocketbase/pb_hooks/models.pb.js`, implementasi pemanggilan awal menggunakan `$app.findAllRecords("providers")` yang mengambil seluruh baris data dari tabel `providers` tanpa klausa filter status aktif:
+```javascript
+// SEBELUM PERBAIKAN:
+const records = $app.findAllRecords("providers");
+const rawList = records.map(item => { ... });
+```
+Walaupun hook lain (seperti `categories.pb.js` dan `videos.pb.js`) sudah memeriksa status `if (target.get("status") !== "active")`, endpoint models tidak memfilter list awal sehingga data provider inaktif tetap dikirim ke client.
+
+### Solusi & Implementasi
+Tambahkan pipeline filter berbasis status sebelum proses transformasi model dan pengurutan prioritas:
+```javascript
+// PERBAIKAN DI models.pb.js:
+const records = $app.findAllRecords("providers");
+
+const rawList = records
+    .filter(item => {
+        const status = (item.get("status") || "active").toLowerCase();
+        return status !== "inactive";
+    })
+    .map(item => {
+        return {
+            id: item.get("provider_id"),
+            name: item.get("name"),
+            icon_url: item.get("icon_url"),
+            description: item.get("description"),
+            content_type: item.get("content_type"),
+            status: item.get("status") || "active"
+        };
+    });
+```
+
+### Pencegahan ke Depan
+- **Konsistensi Whitelist Status**: Setiap endpoint publik yang membaca koleksi dengan flag `status` harus secara konsisten memfilter data hanya pada record `active`, baik di level query PocketBase (`findRecordsByFilter`) maupun sanitasi Javascript array filter.

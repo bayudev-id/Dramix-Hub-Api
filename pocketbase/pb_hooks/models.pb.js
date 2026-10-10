@@ -11,16 +11,21 @@ routerAdd("GET", "/api/modelles/models", (e) => {
         "freereels": 7
     };
 
-    const rawList = records.map(item => {
-        return {
-            id: item.get("provider_id"),
-            name: item.get("name"),
-            icon_url: item.get("icon_url"),
-            description: item.get("description"),
-            content_type: item.get("content_type"),
-            status: item.get("status")
-        };
-    });
+    const rawList = records
+        .filter(item => {
+            const status = (item.get("status") || "active").toLowerCase();
+            return status !== "inactive";
+        })
+        .map(item => {
+            return {
+                id: item.get("provider_id"),
+                name: item.get("name"),
+                icon_url: item.get("icon_url"),
+                description: item.get("description"),
+                content_type: item.get("content_type"),
+                status: item.get("status") || "active"
+            };
+        });
 
     rawList.sort((a, b) => {
         const idA = (a.id || "").toLowerCase();

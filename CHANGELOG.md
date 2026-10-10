@@ -39,6 +39,9 @@ Semua perubahan pada **Dramix Hub API (Gateway)** dicatat dalam dokumen ini meng
   - Mengonfigurasi `ecosystem.config.js` agar seluruh microservice internal (`cineflow:7401`, `wetv:7402`, `kisskh:7403`, `moviebox:7404`, `viu:7405`, `freereels:7406`, `iqiyi:7407`) terisolasi di `HOST: 127.0.0.1`, dan hanya PocketBase Gateway yang membuka port `0.0.0.0:8090` ke LAN.
 
 ### Fixed
+- **Penyaringan Provider Inaktif pada Endpoint Models (`pocketbase/pb_hooks/models.pb.js`)**:
+  - Menambahkan sanitasi status entitas pada endpoint `/api/modelles/models`.
+  - Provider dengan nilai `status == "inactive"` pada koleksi database PocketBase secara otomatis difilter dan tidak lagi dikirimkan ke aplikasi klien Android.
 - **VIU Playback Failure on Android ExoPlayer**:
   - Memperbaiki kegagalan pemutaran video VIU akibat stream URL sebelumnya mengarah langsung ke port 7405 yang tidak terbuka di LAN dan tidak memiliki otorisasi API key.
   - Rewrite stream URLs pada `/api/modelles/source` (`pocketbase/pb_hooks/source.pb.js`) agar seluruh manifest dan key diakses via PocketBase port 8090.

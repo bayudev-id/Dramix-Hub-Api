@@ -217,7 +217,7 @@ async def get_playback_distribute(request: Request):
 
                 # Replace dms-api.viu.com with our local host and propagate token to proxy URLs
                 scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
-                local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:7405')}"
+                local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:6105')}"
                 active_token = headers.get("Authorization", "").replace("Bearer ", "").strip()
                 api_key = request.query_params.get("api_key") or request.query_params.get("secret") or os.getenv("API_SECRET_KEY", "").strip()
                 resp_json = rewrite_viu_urls(resp_json, local_host, active_token, api_key)
@@ -272,7 +272,7 @@ async def proxy_airplay_m3u8(request: Request):
                 logger.info(f"[vuclip_airplay] Retry after token refresh: status={resp.status_code}")
         
         scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
-        local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:7405')}"
+        local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:6105')}"
         api_key = request.query_params.get("api_key") or request.query_params.get("secret") or os.getenv("API_SECRET_KEY", "").strip()
         
         content = resp.text.replace("https://prod-in.viu.com/api/appsdrm/getkey", f"{local_host}/api/appsdrm/getkey")
@@ -342,7 +342,7 @@ async def proxy_vod_m3u8(request: Request):
             )
         
         scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
-        local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:7405')}"
+        local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:6105')}"
         api_key = request.query_params.get("api_key") or request.query_params.get("secret") or os.getenv("API_SECRET_KEY", "").strip()
         
         content = resp.text.replace("https://prod-in.viu.com/api/appsdrm/getkey", f"{local_host}/api/appsdrm/getkey")
@@ -406,7 +406,7 @@ async def proxy_vod_fallback(path: str, request: Request):
             path.endswith(".vtt")
         ):
             scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
-            local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:7405')}"
+            local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:6105')}"
             api_key = request.query_params.get("api_key") or request.query_params.get("secret") or os.getenv("API_SECRET_KEY", "").strip()
             try:
                 content = resp.text.replace("https://prod-in.viu.com/api/appsdrm/getkey", f"{local_host}/api/appsdrm/getkey")
@@ -508,7 +508,7 @@ async def get_drama_stream_custom(
     headers = get_proxy_headers(request)
 
     scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
-    local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:7405')}"
+    local_host = f"{scheme}://{request.headers.get('host', '127.0.0.1:6105')}"
 
     subtitles = []
     ccs_product_id = episode_id  # Fallback

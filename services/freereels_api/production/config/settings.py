@@ -58,7 +58,7 @@ DEFAULT_COUNTRY = "ID"
 
 # API Proxy Server
 PROXY_HOST = os.getenv("HOST", "127.0.0.1")
-PROXY_PORT = int(os.getenv("PORT", 7406))
+PROXY_PORT = int(os.getenv("PORT", 6106))
 
 # Timeouts (seconds)
 REQUEST_TIMEOUT = 15

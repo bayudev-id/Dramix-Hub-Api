@@ -9,13 +9,13 @@ Dokumen ini mendefinisikan alokasi port resmi dan standar untuk semua service di
 | Service Name | Engine | Direktori Kerja | Entry Command | Port Default | Env Variable |
 |---|---|---|---|---|---|
 | **PocketBase** | Go | `pocketbase/` | `pocketbase.exe serve` | **`8090`** | - |
-| **CineFlow Hub** | FastAPI | `services/cineflow_hub_api/` | `python main.py` | **`7401`** | `PORT` |
-| **WeTV API** | FastAPI | `services/wetv_api/` | `python main.py` | **`7402`** | `PORT` |
-| **KissKH API** | Express.js | `services/kisskh_api/` | `node server.js` | **`7403`** | `PORT` |
-| **MovieBox API** | FastAPI | `services/moviebox_api/` | `python app.py` | **`7404`** | `PORT` |
-| **Viu API** | FastAPI | `services/viu_api/` | `python main.py` | **`7405`** | `PORT` |
-| **FreeReels API** | FastAPI | `services/freereels_api/production/` | `python run_proxy.py` | **`7406`** | `PORT` |
-| **iQIYI API** | FastAPI | `services/iqiyi_api/production/` | `python run_server.py` | **`7407`** | `PORT` |
+| **CineFlow Hub** | FastAPI | `services/cineflow_hub_api/` | `python main.py` | **`6101`** | `PORT` |
+| **WeTV API** | FastAPI | `services/wetv_api/` | `python main.py` | **`6102`** | `PORT` |
+| **KissKH API** | Express.js | `services/kisskh_api/` | `node server.js` | **`6103`** | `PORT` |
+| **MovieBox API** | FastAPI | `services/moviebox_api/` | `python app.py` | **`6104`** | `PORT` |
+| **Viu API** | FastAPI | `services/viu_api/` | `python main.py` | **`6105`** | `PORT` |
+| **FreeReels API** | FastAPI | `services/freereels_api/production/` | `python run_proxy.py` | **`6106`** | `PORT` |
+| **iQIYI API** | FastAPI | `services/iqiyi_api/production/` | `python run_server.py` | **`6107`** | `PORT` |
 
 ---
 
@@ -24,21 +24,21 @@ Dokumen ini mendefinisikan alokasi port resmi dan standar untuk semua service di
 Setiap kali Anda menambahkan provider baru di folder `services/provider_nama/`:
 
 1. **Gunakan Port Berurutan Selanjutnya:**
-   - Provider ke-9: **`7408`**
-   - Provider ke-10: **`7409`**
-   - Provider ke-11: **`7410`**, dst.
+   - Provider ke-9: **`6108`**
+   - Provider ke-10: **`6109`**
+   - Provider ke-11: **`6110`**, dst.
 
 2. **Gunakan Pattern Konfigurasi Port yang Seragam:**
    - **Python / FastAPI:**
      ```python
      import os
-     port = int(os.getenv("PORT", 7408))
+     port = int(os.getenv("PORT", 6108))
      host = os.getenv("HOST", "127.0.0.1")
      uvicorn.run("main:app", host=host, port=port)
      ```
    - **Node.js / Express:**
      ```javascript
-     const PORT = process.env.PORT || 7408;
+     const PORT = process.env.PORT || 6108;
      app.listen(PORT, () => console.log(`Running on port ${PORT}`));
      ```
 

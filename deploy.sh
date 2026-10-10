@@ -3,7 +3,7 @@
 # Dramix Gateway - Production Deployment Script for Linux / Mini PC
 # Path: /opt/dramix_gateway
 # Management: PM2
-# Security: Port 8090 (Gateway Public/LAN) | Ports 7401-7407 (127.0.0.1 Loopback Only)
+# Security: Port 8090 (Gateway Public/LAN) | Ports 6101-6107 (127.0.0.1 Loopback Only)
 # ==============================================================================
 
 set -euo pipefail
@@ -136,7 +136,7 @@ if command -v ufw >/dev/null 2>&1; then
         log_info "UFW detected. Allowing port 8090/tcp and denying internal ports from LAN..."
         sudo ufw allow 8090/tcp comment 'Dramix Gateway Port'
         # Defense in depth: Deny direct external connections to internal ports
-        for p in {7401..7407}; do
+        for p in {6101..6107}; do
             sudo ufw deny in to any port "$p" proto tcp comment "Block internal microservice $p" >/dev/null 2>&1 || true
         done
         log_success "UFW firewall rules applied."
@@ -171,7 +171,7 @@ else
 fi
 
 # Verify Internal Microservice Binding (Should bind 127.0.0.1 only)
-VIU_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:7405/health" || echo "000")
+VIU_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:6105/health" || echo "000")
 log_info "Internal VIU service loopback response: HTTP $VIU_STATUS"
 
 echo ""
@@ -182,7 +182,7 @@ echo "Summary:"
 echo " - Directory        : $TARGET_DIR"
 echo " - Gateway URL      : http://<MINIPC_LAN_IP>:8090"
 echo " - Admin Dashboard  : http://<MINIPC_LAN_IP>:8090/_/"
-echo " - Internal Services: 127.0.0.1 ports 7401-7407 (Strictly Isolated)"
+echo " - Internal Services: 127.0.0.1 ports 6101-6107 (Strictly Isolated)"
 echo ""
 echo "Useful Commands:"
 echo " - Check status : pm2 status"

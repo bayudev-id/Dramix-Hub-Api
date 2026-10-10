@@ -45,7 +45,7 @@ Once deployed, visit the root URL (`/`) to see the interactive documentation das
    ```
 3. Setup environment variables (create `.env`):
    ```env
-   PORT=7403
+   PORT=6103
    HOST=127.0.0.1
    UPSTREAM_BASE_URL=https://kisskh.do
    UPSTREAM_TIMEOUT=15000

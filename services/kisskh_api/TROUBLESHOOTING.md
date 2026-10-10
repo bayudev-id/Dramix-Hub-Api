@@ -59,8 +59,8 @@ Setelah edit `/etc/hosts`, test semua endpoints:
 
 ```bash
 # Test local service
-curl http://127.0.0.1:7403/api/Home
-curl http://127.0.0.1:7403/api/DramaList/MostView
+curl http://127.0.0.1:6103/api/Home
+curl http://127.0.0.1:6103/api/DramaList/MostView
 
 # Test via Cloudflare Tunnel (jika ada)
 curl https://kisskh.dramix.biz.id/api/Home
@@ -102,7 +102,7 @@ sudo chmod +x /usr/local/bin/dnsproxy
 
 **Solution**: Edit `.env` to specify HOST:
 ```env
-PORT=7403
+PORT=6103
 HOST=192.168.18.104
 ```
 

@@ -66,6 +66,6 @@ async def root():
 if __name__ == "__main__":
     import uvicorn
     host = os.getenv("HOST", "127.0.0.1")
-    port = int(os.getenv("PORT", 7402))
-    # Jalankan server uvicorn pada port 7402
+    port = int(os.getenv("PORT", 6102))
+    # Jalankan server uvicorn pada port 6102
     uvicorn.run("main:app", host=host, port=port, reload=DEBUG)

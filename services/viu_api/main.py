@@ -668,7 +668,7 @@ async def secret_dashboard(request: Request):
                         <label>Request Gateway URL</label>
                         <div class="url-bar-container">
                             <span class="url-method">GET</span>
-                            <span style="color: var(--text-muted); font-family: monospace;">http://127.0.0.1:7405</span>
+                            <span style="color: var(--text-muted); font-family: monospace;">http://127.0.0.1:6105</span>
                             <input type="text" class="url-input" id="endpoint-url-input" value="/api/config">
                             <button class="btn-execute" id="btn-run-test" onclick="executeCurrentTest()">
                                 <div class="loading-spinner" id="test-spinner"></div>
@@ -1208,6 +1208,6 @@ async def secret_dashboard(request: Request):
 if __name__ == "__main__":
     import uvicorn
     host = os.getenv("HOST", "127.0.0.1")
-    port = int(os.getenv("PORT", 7405))
+    port = int(os.getenv("PORT", 6105))
     reload = os.getenv("RELOAD", "false").lower() in ("true", "1", "t")
     uvicorn.run("main:app", host=host, port=port, reload=reload)

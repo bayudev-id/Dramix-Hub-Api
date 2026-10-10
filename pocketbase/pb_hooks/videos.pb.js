@@ -142,11 +142,11 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
         let rawItems = [];
         let hasMore = true;
 
-        // 1. KissKH (Port 7403)
+        // 1. KissKH (Port 6103)
         if (normalizedId === "kisskh") {
             const kissPath = (categoryId.toLowerCase() === "explore") ? "List" : categoryId;
             const res = $http.send({
-                url: "http://127.0.0.1:7403/api/DramaList/" + encodeURIComponent(kissPath) + "?page=" + pageNum,
+                url: "http://127.0.0.1:6103/api/DramaList/" + encodeURIComponent(kissPath) + "?page=" + pageNum,
                 method: "GET",
                 timeout: 10
             });
@@ -194,10 +194,10 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 }
             }
         }
-        // 2. WeTV (Port 7402)
+        // 2. WeTV (Port 6102)
         else if (normalizedId === "wetv") {
             const res = $http.send({
-                url: "http://127.0.0.1:7402/api/wetv/channel/" + encodeURIComponent(categoryId) + "?page_no=" + pageNum,
+                url: "http://127.0.0.1:6102/api/wetv/channel/" + encodeURIComponent(categoryId) + "?page_no=" + pageNum,
                 method: "GET",
                 timeout: 10
             });
@@ -279,7 +279,7 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 }
             }
         }
-        // 3. MovieBox (Port 7404)
+        // 3. MovieBox (Port 6104)
         else if (normalizedId === "moviebox") {
             const isTrending = (String(categoryId) === "3521493905000087296");
             if (!isTrending && pageNum > 1) {
@@ -289,7 +289,7 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
             } else {
                 const mbPage = Math.max(0, pageNum - 1);
                 const res = $http.send({
-                    url: "http://127.0.0.1:7404/content?opId=" + encodeURIComponent(categoryId) + "&page=" + mbPage + "&perPage=18",
+                    url: "http://127.0.0.1:6104/content?opId=" + encodeURIComponent(categoryId) + "&page=" + mbPage + "&perPage=18",
                     method: "GET",
                     timeout: 10
                 });
@@ -339,10 +339,10 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 }
             }
         }
-        // 4. Viu (Port 7405)
+        // 4. Viu (Port 6105)
         else if (normalizedId === "viu") {
             const res = $http.send({
-                url: "http://127.0.0.1:7405/api/mobile?r=/category/series&category_id=" + encodeURIComponent(categoryId) + "&page=" + pageNum + "&api_key=912ursfh283fjefw8234u320t9uejf2983048290859032jfej",
+                url: "http://127.0.0.1:6105/api/mobile?r=/category/series&category_id=" + encodeURIComponent(categoryId) + "&page=" + pageNum + "&api_key=912ursfh283fjefw8234u320t9uejf2983048290859032jfej",
                 method: "GET",
                 timeout: 10
             });
@@ -386,10 +386,10 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 }
             }
         }
-        // 5. FreeReels (Port 7406)
+        // 5. FreeReels (Port 6106)
         else if (normalizedId === "freereels") {
             const res = $http.send({
-                url: "http://127.0.0.1:7406/videos?module_key=" + encodeURIComponent(categoryId) + "&page=" + pageNum,
+                url: "http://127.0.0.1:6106/videos?module_key=" + encodeURIComponent(categoryId) + "&page=" + pageNum,
                 method: "GET",
                 timeout: 15
             });
@@ -459,7 +459,7 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 }
             }
         }
-        // 6. iQIYI (Port 7407)
+        // 6. iQIYI (Port 6107)
         else if (normalizedId === "iqiyi") {
             const lowerCat = categoryId.toLowerCase();
             let res = null;
@@ -470,7 +470,7 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                     rawItems = [];
                 } else {
                     res = $http.send({
-                        url: "http://127.0.0.1:7407/api/feed",
+                        url: "http://127.0.0.1:6107/api/feed",
                         method: "GET",
                         timeout: 10
                     });
@@ -484,7 +484,7 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 else if (categoryId === "1") kw = "movie";
 
                 res = $http.send({
-                    url: "http://127.0.0.1:7407/api/search",
+                    url: "http://127.0.0.1:6107/api/search",
                     method: "POST",
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({ keyword: kw, pg_num: pageNum }),
@@ -535,10 +535,10 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 }
             }
         }
-        // 7. CineFlow Hub Upstream (Port 7401)
+        // 7. CineFlow Hub Upstream (Port 6101)
         else {
             const cfRes = $http.send({
-                url: "http://127.0.0.1:7401/api/modelles/videos?model_id=" + encodeURIComponent(canonicalId) + "&category_id=" + encodeURIComponent(categoryId) + "&page=" + pageNum,
+                url: "http://127.0.0.1:6101/api/modelles/videos?model_id=" + encodeURIComponent(canonicalId) + "&category_id=" + encodeURIComponent(categoryId) + "&page=" + pageNum,
                 method: "GET",
                 timeout: 15
             });

@@ -1357,6 +1357,6 @@ def get_server_info():
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 7404))
+    port = int(os.environ.get("PORT", 6104))
     host = os.environ.get("HOST", "127.0.0.1")
     uvicorn.run("app:app", host=host, port=port, reload=False)

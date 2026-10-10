@@ -39,7 +39,7 @@ Seluruh komunikasi aplikasi mobile (`com.dramix.app`) hanya berinteraksi melalui
            │       │       │       │       │       │       │
     ┌──────▼──┐ ┌──▼──┐ ┌──▼──┐ ┌──▼──┐ ┌──▼──┐ ┌──▼──┐ ┌──▼──┐
     │CineFlow │ │WeTV │ │KissKH││MovieBx││ Viu  ││FreeR.││iQIYI │
-    │  :7401  │ │:7402│ │:7403│ │:7404 │ │:7405│ │:7406│ │:7407│
+    │  :6101  │ │:6102│ │:6103│ │:6104 │ │:6105│ │:6106│ │:6107│
     └─────────┘ └─────┘ └─────┘ └──────┘ └─────┘ └─────┘ └─────┘
 ```
 
@@ -56,13 +56,13 @@ Seluruh komunikasi aplikasi mobile (`com.dramix.app`) hanya berinteraksi melalui
 | Service Name | Engine | Direktori Kerja | Entry Command | Port | Deskripsi |
 |---|---|---|---|---|---|
 | **PocketBase** | Go | `pocketbase/` | `pocketbase.exe serve` | **`8090`** | API Gateway & Database Lisensi |
-| **CineFlow Hub** | FastAPI | `services/cineflow_hub_api/` | `python main.py` | **`7401`** | Multi-Source Aggregator & Live TV |
-| **WeTV API** | FastAPI | `services/wetv_api/` | `python main.py` | **`7402`** | Scraper & Parser WeTV VOD |
-| **KissKH API** | Express | `services/kisskh_api/` | `node server.js` | **`7403`** | Parser Drama Asia & Subtitle |
-| **MovieBox API** | FastAPI | `services/moviebox_api/` | `python app.py` | **`7404`** | Provider Film & Serial Barat |
-| **Viu API** | FastAPI | `services/viu_api/` | `python main.py` | **`7405`** | Scraper Viu Drama & Variety Show |
-| **FreeReels API**| FastAPI | `services/freereels_api/` | `python run_proxy.py` | **`7406`** | Parser Drama Pendek Vertikal |
-| **iQIYI API** | FastAPI | `services/iqiyi_api/` | `python run_server.py` | **`7407`** | Scraper iQIYI C-Drama & Anime |
+| **CineFlow Hub** | FastAPI | `services/cineflow_hub_api/` | `python main.py` | **`6101`** | Multi-Source Aggregator & Live TV |
+| **WeTV API** | FastAPI | `services/wetv_api/` | `python main.py` | **`6102`** | Scraper & Parser WeTV VOD |
+| **KissKH API** | Express | `services/kisskh_api/` | `node server.js` | **`6103`** | Parser Drama Asia & Subtitle |
+| **MovieBox API** | FastAPI | `services/moviebox_api/` | `python app.py` | **`6104`** | Provider Film & Serial Barat |
+| **Viu API** | FastAPI | `services/viu_api/` | `python main.py` | **`6105`** | Scraper Viu Drama & Variety Show |
+| **FreeReels API**| FastAPI | `services/freereels_api/` | `python run_proxy.py` | **`6106`** | Parser Drama Pendek Vertikal |
+| **iQIYI API** | FastAPI | `services/iqiyi_api/` | `python run_server.py` | **`6107`** | Scraper iQIYI C-Drama & Anime |
 
 ---
 

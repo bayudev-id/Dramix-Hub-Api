@@ -6,6 +6,20 @@ Semua perubahan pada **Dramix Hub API (Gateway)** dicatat dalam dokumen ini meng
 
 ## [Unreleased]
 
+### Changed
+- **Internal Microservices Port Reallocation (6101-6107)**:
+  - Migrasi seluruh port microservice internal dari range `7401-7407` ke range bebas konflik `6101-6107`:
+    - `CineFlow Hub`: 7401 -> 6101
+    - `WeTV API`: 7402 -> 6102
+    - `KissKH API`: 7403 -> 6103
+    - `MovieBox API`: 7404 -> 6104
+    - `Viu API`: 7405 -> 6105
+    - `FreeReels API`: 7406 -> 6106
+    - `iQIYI API`: 7407 -> 6107
+  - Menyelesaikan konflik `[Errno 98] Address already in use` di server / Mini PC akibat service legacy yang menempati port 7401-7406.
+  - Memperbarui seluruh konfigurasi pada `ecosystem.config.js`, `deploy.sh` (UFW & health checks), launcher Windows (`start_all.bat`, `stop_all.bat`), default port di entrypoint masing-masing service, serta seluruh PocketBase hooks (`categories.pb.js`, `videos.pb.js`, `detail.pb.js`, `search.pb.js`, `source.pb.js`, `viu_proxy.pb.js`).
+  - Memperbarui dokumentasi registry port di `PORTS.md`, `README.md`, dan panduan troubleshooting.
+
 ### Added
 - **VIU HLS Manifest & AES-128 DRM Key Proxy (`pb_hooks/viu_proxy.pb.js`)**:
   - Proxy HLS playlist (`/api/modelles/viu/vuclip_vod.m3u8` dan `/api/modelles/viu/vuclip_airplay.m3u8`) melalui PocketBase port 8090.

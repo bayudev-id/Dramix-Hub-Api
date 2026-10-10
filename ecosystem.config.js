@@ -29,7 +29,7 @@ module.exports = {
       cwd: "./services/cineflow_hub_api",
       script: "main.py",
       interpreter: pythonInterpreter,
-      env: { PORT: 7401, HOST: "127.0.0.1" },
+      env: { PORT: 6101, HOST: "127.0.0.1" },
       autorestart: true,
       watch: false
     },
@@ -38,7 +38,7 @@ module.exports = {
       cwd: "./services/wetv_api",
       script: "main.py",
       interpreter: pythonInterpreter,
-      env: { PORT: 7402, HOST: "127.0.0.1" },
+      env: { PORT: 6102, HOST: "127.0.0.1" },
       autorestart: true,
       watch: false
     },
@@ -46,7 +46,7 @@ module.exports = {
       name: "dramix-kisskh",
       cwd: "./services/kisskh_api",
       script: "server.js",
-      env: { PORT: 7403, HOST: "127.0.0.1" },
+      env: { PORT: 6103, HOST: "127.0.0.1" },
       autorestart: true,
       watch: false
     },
@@ -55,7 +55,7 @@ module.exports = {
       cwd: "./services/moviebox_api",
       script: "app.py",
       interpreter: pythonInterpreter,
-      env: { PORT: 7404, HOST: "127.0.0.1" },
+      env: { PORT: 6104, HOST: "127.0.0.1" },
       autorestart: true,
       watch: false
     },
@@ -64,7 +64,7 @@ module.exports = {
       cwd: "./services/viu_api",
       script: "main.py",
       interpreter: pythonInterpreter,
-      env: { PORT: 7405, HOST: "127.0.0.1" },
+      env: { PORT: 6105, HOST: "127.0.0.1" },
       autorestart: true,
       watch: false
     },
@@ -73,7 +73,7 @@ module.exports = {
       cwd: "./services/freereels_api/production",
       script: "run_proxy.py",
       interpreter: pythonInterpreter,
-      env: { PORT: 7406, HOST: "127.0.0.1" },
+      env: { PORT: 6106, HOST: "127.0.0.1" },
       autorestart: true,
       watch: false
     },
@@ -82,7 +82,7 @@ module.exports = {
       cwd: "./services/iqiyi_api/production",
       script: "run_server.py",
       interpreter: pythonInterpreter,
-      env: { PORT: 7407, SERVER_PORT: 7407, HOST: "127.0.0.1", SERVER_HOST: "127.0.0.1" },
+      env: { PORT: 6107, SERVER_PORT: 6107, HOST: "127.0.0.1", SERVER_HOST: "127.0.0.1" },
       autorestart: true,
       watch: false
     }

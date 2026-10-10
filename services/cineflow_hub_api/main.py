@@ -2884,7 +2884,7 @@ async def token_info_page():
 if __name__ == "__main__":
     import uvicorn
     import os
-    port = int(os.getenv("PORT", 7401))
+    port = int(os.getenv("PORT", 6101))
     host = os.getenv("HOST", "127.0.0.1")
     print(f"[CINEFLOW] Proxy v{app.version} — http://{host}:{port}")
     uvicorn.run(app, host=host, port=port, reload=False)

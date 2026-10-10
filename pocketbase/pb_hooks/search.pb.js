@@ -132,10 +132,10 @@ const handleSearch = (e) => {
         let rawItems = [];
         let hasMore = false;
 
-        // 1. KissKH (Port 7403)
+        // 1. KissKH (Port 6103)
         if (normalizedId === "kisskh") {
             const res = $http.send({
-                url: "http://127.0.0.1:7403/api/DramaList/Search?q=" + encodeURIComponent(q),
+                url: "http://127.0.0.1:6103/api/DramaList/Search?q=" + encodeURIComponent(q),
                 method: "GET",
                 timeout: 10
             });
@@ -164,10 +164,10 @@ const handleSearch = (e) => {
                 }
             }
         }
-        // 2. WeTV (Port 7402)
+        // 2. WeTV (Port 6102)
         else if (normalizedId === "wetv") {
             const res = $http.send({
-                url: "http://127.0.0.1:7402/api/wetv/search?query=" + encodeURIComponent(q) + "&page_no=" + pageNum,
+                url: "http://127.0.0.1:6102/api/wetv/search?query=" + encodeURIComponent(q) + "&page_no=" + pageNum,
                 method: "GET",
                 timeout: 12
             });
@@ -200,10 +200,10 @@ const handleSearch = (e) => {
             const pageSize = 10;
             hasMore = (pageNum * pageSize) < totalResults;
         }
-        // 3. MovieBox (Port 7404)
+        // 3. MovieBox (Port 6104)
         else if (normalizedId === "moviebox") {
             const res = $http.send({
-                url: "http://127.0.0.1:7404/search?keyword=" + encodeURIComponent(q) + "&page=" + pageNum + "&perPage=20",
+                url: "http://127.0.0.1:6104/search?keyword=" + encodeURIComponent(q) + "&page=" + pageNum + "&perPage=20",
                 method: "GET",
                 timeout: 10
             });
@@ -236,11 +236,11 @@ const handleSearch = (e) => {
                 hasMore = res.json.pager.has_more;
             }
         }
-        // 4. Viu (Port 7405)
+        // 4. Viu (Port 6105)
         else if (normalizedId === "viu") {
             const apiKey = "912ursfh283fjefw8234u320t9uejf2983048290859032jfej";
             const res = $http.send({
-                url: "http://127.0.0.1:7405/api/drama-api/search?q=" + encodeURIComponent(q) + "&page=" + pageNum + "&api_key=" + apiKey,
+                url: "http://127.0.0.1:6105/api/drama-api/search?q=" + encodeURIComponent(q) + "&page=" + pageNum + "&api_key=" + apiKey,
                 headers: {
                     "Authorization": "Bearer " + apiKey
                 },
@@ -276,10 +276,10 @@ const handleSearch = (e) => {
             // VIU: heuristic - if items returned, assume has_more (VIU doesn't expose pagination)
             hasMore = list.length > 0;
         }
-        // 5. FreeReels (Port 7406)
+        // 5. FreeReels (Port 6106)
         else if (normalizedId === "freereels") {
             const res = $http.send({
-                url: "http://127.0.0.1:7406/search/drama?keyword=" + encodeURIComponent(q) + "&page=" + pageNum,
+                url: "http://127.0.0.1:6106/search/drama?keyword=" + encodeURIComponent(q) + "&page=" + pageNum,
                 method: "GET",
                 timeout: 15
             });
@@ -316,10 +316,10 @@ const handleSearch = (e) => {
                 hasMore = res.json.data.page_info.has_more;
             }
         }
-        // 6. iQIYI (Port 7407)
+        // 6. iQIYI (Port 6107)
         else if (normalizedId === "iqiyi") {
             const res = $http.send({
-                url: "http://127.0.0.1:7407/api/search",
+                url: "http://127.0.0.1:6107/api/search",
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ keyword: q, pg_num: pageNum }),
@@ -367,7 +367,7 @@ const handleSearch = (e) => {
             for (let cIdx = 0; cIdx < categories.length; cIdx++) {
                 const cat = categories[cIdx];
                 const res = $http.send({
-                    url: "http://127.0.0.1:7401/api/modelles/videos?model_id=CineTv&category_id=" + encodeURIComponent(cat) + "&page=1",
+                    url: "http://127.0.0.1:6101/api/modelles/videos?model_id=CineTv&category_id=" + encodeURIComponent(cat) + "&page=1",
                     method: "GET",
                     timeout: 8
                 });
@@ -398,7 +398,7 @@ const handleSearch = (e) => {
             // CineTv: no pagination support (category search only)
             hasMore = false;
         }
-        // 8. CineFlow Hub Upstream (Port 7401 - 17 Provider)
+        // 8. CineFlow Hub Upstream (Port 6101 - 17 Provider)
         else {
             const reqBody = {
                 model_id: canonicalId,
@@ -408,7 +408,7 @@ const handleSearch = (e) => {
             };
 
             const res = $http.send({
-                url: "http://127.0.0.1:7401/api/modelles/search",
+                url: "http://127.0.0.1:6101/api/modelles/search",
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(reqBody),
@@ -458,7 +458,7 @@ const handleSearch = (e) => {
             if (rawItems.length === 0) {
                 const lowerQ = q.toLowerCase();
                 const catRes = $http.send({
-                    url: "http://127.0.0.1:7401/api/modelles/categories?model_id=" + encodeURIComponent(canonicalId),
+                    url: "http://127.0.0.1:6101/api/modelles/categories?model_id=" + encodeURIComponent(canonicalId),
                     method: "GET",
                     timeout: 8
                 });
@@ -468,7 +468,7 @@ const handleSearch = (e) => {
                         const catId = cats[cIdx].id;
                         if (!catId) continue;
                         const vRes = $http.send({
-                            url: "http://127.0.0.1:7401/api/modelles/videos?model_id=" + encodeURIComponent(canonicalId) + "&category_id=" + encodeURIComponent(catId) + "&page=1",
+                            url: "http://127.0.0.1:6101/api/modelles/videos?model_id=" + encodeURIComponent(canonicalId) + "&category_id=" + encodeURIComponent(catId) + "&page=1",
                             method: "GET",
                             timeout: 8
                         });

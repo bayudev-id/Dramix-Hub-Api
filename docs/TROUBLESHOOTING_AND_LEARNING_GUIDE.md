@@ -33,7 +33,7 @@ if (res.json && res.json.pager) {
    ```http
    GET /api/modelles/videos?model_id=moviebox&category_id=popular_movies&page=1
    ```
-2. Amati payload upstream dari microservice MovieBox (`:7404`):
+2. Amati payload upstream dari microservice MovieBox (`:6104`):
    ```json
    {
      "items": [...],
@@ -53,7 +53,7 @@ if (!isTrending && pageNum > 1) {
     hasMore = false;
     rawItems = [];
 } else {
-    // Fetch ke microservice :7404
+    // Fetch ke microservice :6104
     ...
     if (isTrending && res.json && res.json.pager && typeof res.json.pager.has_more === "boolean") {
         hasMore = res.json.pager.has_more;
@@ -167,12 +167,12 @@ Gateway mengoperasikan 8 service secara bersamaan (PocketBase + 7 microservices)
 2. **Standard Registry (`PORTS.md`)**:
    Setiap service memiliki alokasi port statis berurutan:
    - `8090`: PocketBase Gateway
-   - `7401`: CineFlow Hub
-   - `7402`: WeTV API
-   - `7403`: KissKH API
-   - `7404`: MovieBox API
-   - `7405`: Viu API
-   - `7406`: FreeReels API
-   - `7407`: iQIYI API
+   - `6101`: CineFlow Hub
+   - `6102`: WeTV API
+   - `6103`: KissKH API
+   - `6104`: MovieBox API
+   - `6105`: Viu API
+   - `6106`: FreeReels API
+   - `6107`: iQIYI API
 3. **Master Launcher (`start_all.bat` & `stop_all.bat`)**:
    Skrip otomatisasi yang mendeteksi virtual environment, menyalakan seluruh service secara terurut dengan timeout proteksi, dan menyediakan skrip pembunuhan proses instan berdasarkan alokasi port.

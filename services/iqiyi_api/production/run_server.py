@@ -18,7 +18,7 @@ def main():
     
     # Get configuration
     host = os.getenv("HOST", os.getenv("SERVER_HOST", "127.0.0.1"))
-    port = int(os.getenv("PORT", os.getenv("SERVER_PORT", 7407)))
+    port = int(os.getenv("PORT", os.getenv("SERVER_PORT", 6107)))
     
     print(f"Starting iQIYI API Server...")
     print(f"Host: {host}")

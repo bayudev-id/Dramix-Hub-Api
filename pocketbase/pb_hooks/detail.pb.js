@@ -103,10 +103,10 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
 
         let detail = null;
 
-        // 1. KissKH (Port 7403)
+        // 1. KissKH (Port 6103)
         if (normalizedId === "kisskh") {
             const res = $http.send({
-                url: "http://127.0.0.1:7403/api/Drama/" + encodeURIComponent(contentId),
+                url: "http://127.0.0.1:6103/api/Drama/" + encodeURIComponent(contentId),
                 method: "GET",
                 timeout: 10
             });
@@ -159,10 +159,10 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 cast: []
             };
         }
-        // 2. WeTV (Port 7402)
+        // 2. WeTV (Port 6102)
         else if (normalizedId === "wetv") {
             const res = $http.send({
-                url: "http://127.0.0.1:7402/api/wetv/album/" + encodeURIComponent(contentId),
+                url: "http://127.0.0.1:6102/api/wetv/album/" + encodeURIComponent(contentId),
                 method: "GET",
                 timeout: 10
             });
@@ -273,16 +273,16 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 cast: cast
             };
         }
-        // 3. MovieBox (Port 7404)
+        // 3. MovieBox (Port 6104)
         else if (normalizedId === "moviebox") {
             let res = $http.send({
-                url: "http://127.0.0.1:7404/detail?detailPath=" + encodeURIComponent(contentId),
+                url: "http://127.0.0.1:6104/detail?detailPath=" + encodeURIComponent(contentId),
                 method: "GET",
                 timeout: 10
             });
             if (res.statusCode !== 200) {
                 res = $http.send({
-                    url: "http://127.0.0.1:7404/detail?detailPath=&subjectId=" + encodeURIComponent(contentId),
+                    url: "http://127.0.0.1:6104/detail?detailPath=&subjectId=" + encodeURIComponent(contentId),
                     method: "GET",
                     timeout: 10
                 });
@@ -423,11 +423,11 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 cast: cast
             };
         }
-        // 4. Viu (Port 7405)
+        // 4. Viu (Port 6105)
         else if (normalizedId === "viu") {
             const apiKey = "912ursfh283fjefw8234u320t9uejf2983048290859032jfej";
             let pListRes = $http.send({
-                url: "http://127.0.0.1:7405/api/mobile?r=/vod/product-list&series_id=" + encodeURIComponent(contentId) + "&size=100&sort=ASC&api_key=" + apiKey,
+                url: "http://127.0.0.1:6105/api/mobile?r=/vod/product-list&series_id=" + encodeURIComponent(contentId) + "&size=100&sort=ASC&api_key=" + apiKey,
                 method: "GET",
                 timeout: 10
             });
@@ -437,7 +437,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
 
             if (rawProducts.length === 0) {
                 const detRes = $http.send({
-                    url: "http://127.0.0.1:7405/api/mobile?r=/vod/detail&product_id=" + encodeURIComponent(contentId) + "&os_flag_id=1&api_key=" + apiKey,
+                    url: "http://127.0.0.1:6105/api/mobile?r=/vod/detail&product_id=" + encodeURIComponent(contentId) + "&os_flag_id=1&api_key=" + apiKey,
                     method: "GET",
                     timeout: 10
                 });
@@ -446,7 +446,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                     const realSeriesId = seriesMeta.series_id || (detRes.json.data.current_product && detRes.json.data.current_product.series_id);
                     if (realSeriesId) {
                         pListRes = $http.send({
-                            url: "http://127.0.0.1:7405/api/mobile?r=/vod/product-list&series_id=" + encodeURIComponent(realSeriesId) + "&size=100&sort=ASC&api_key=" + apiKey,
+                            url: "http://127.0.0.1:6105/api/mobile?r=/vod/product-list&series_id=" + encodeURIComponent(realSeriesId) + "&size=100&sort=ASC&api_key=" + apiKey,
                             method: "GET",
                             timeout: 10
                         });
@@ -457,7 +457,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 const firstEpId = rawProducts[0].product_id;
                 if (firstEpId) {
                     const detRes = $http.send({
-                        url: "http://127.0.0.1:7405/api/mobile?r=/vod/detail&product_id=" + encodeURIComponent(firstEpId) + "&os_flag_id=1&api_key=" + apiKey,
+                        url: "http://127.0.0.1:6105/api/mobile?r=/vod/detail&product_id=" + encodeURIComponent(firstEpId) + "&os_flag_id=1&api_key=" + apiKey,
                         method: "GET",
                         timeout: 10
                     });
@@ -519,10 +519,10 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 cast: []
             };
         }
-        // 5. FreeReels (Port 7406)
+        // 5. FreeReels (Port 6106)
         else if (normalizedId === "freereels") {
             const res = $http.send({
-                url: "http://127.0.0.1:7406/detail?id=" + encodeURIComponent(contentId),
+                url: "http://127.0.0.1:6106/detail?id=" + encodeURIComponent(contentId),
                 method: "GET",
                 timeout: 15
             });
@@ -608,10 +608,10 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 cast: []
             };
         }
-        // 6. iQIYI (Port 7407)
+        // 6. iQIYI (Port 6107)
         else if (normalizedId === "iqiyi") {
             const infoRes = $http.send({
-                url: "http://127.0.0.1:7407/api/drama/" + encodeURIComponent(contentId),
+                url: "http://127.0.0.1:6107/api/drama/" + encodeURIComponent(contentId),
                 method: "GET",
                 timeout: 10
             });
@@ -621,7 +621,7 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
             const info = (infoRes.json && infoRes.json.data) || {};
 
             const epsRes = $http.send({
-                url: "http://127.0.0.1:7407/api/drama/" + encodeURIComponent(contentId) + "/episodes",
+                url: "http://127.0.0.1:6107/api/drama/" + encodeURIComponent(contentId) + "/episodes",
                 method: "GET",
                 timeout: 10
             });
@@ -708,10 +708,10 @@ routerAdd("GET", "/api/modelles/detail", (e) => {
                 cast: cast
             };
         }
-        // 7. CineFlow Hub Upstream (Port 7401 - 18 Provider)
+        // 7. CineFlow Hub Upstream (Port 6101 - 18 Provider)
         else {
             const cfRes = $http.send({
-                url: "http://127.0.0.1:7401/api/modelles/detail?model_id=" + encodeURIComponent(canonicalId) + "&id=" + encodeURIComponent(contentId),
+                url: "http://127.0.0.1:6101/api/modelles/detail?model_id=" + encodeURIComponent(canonicalId) + "&id=" + encodeURIComponent(contentId),
                 method: "GET",
                 timeout: 15
             });

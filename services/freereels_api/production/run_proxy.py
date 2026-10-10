@@ -16,7 +16,7 @@ import uvicorn
 
 if __name__ == "__main__":
     host = os.getenv("HOST", "127.0.0.1")
-    port = int(os.getenv("PORT", "7406"))
+    port = int(os.getenv("PORT", "6106"))
 
     print("="*70)
     print("FreeReels API Proxy Server v1.4.0")

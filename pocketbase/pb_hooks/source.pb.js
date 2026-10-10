@@ -58,10 +58,10 @@ routerAdd("GET", "/api/modelles/source", (e) => {
         let headers = {};
         let durationSeconds = 0;
 
-        // 1. KissKH (Port 7403)
+        // 1. KissKH (Port 6103)
         if (normalizedId === "kisskh") {
             const res = $http.send({
-                url: "http://127.0.0.1:7403/api/Stream/" + encodeURIComponent(episodeId),
+                url: "http://127.0.0.1:6103/api/Stream/" + encodeURIComponent(episodeId),
                 method: "GET",
                 timeout: 10
             });
@@ -94,12 +94,12 @@ routerAdd("GET", "/api/modelles/source", (e) => {
                 });
             }
         }
-        // 2. WeTV (Port 7402)
+        // 2. WeTV (Port 6102)
         else if (normalizedId === "wetv") {
             const cid = contentId;
             const vid = episodeId;
             const res = $http.send({
-                url: "http://127.0.0.1:7402/api/wetv/play/" + encodeURIComponent(cid) + "/" + encodeURIComponent(vid),
+                url: "http://127.0.0.1:6102/api/wetv/play/" + encodeURIComponent(cid) + "/" + encodeURIComponent(vid),
                 method: "GET",
                 timeout: 15
             });
@@ -132,7 +132,7 @@ routerAdd("GET", "/api/modelles/source", (e) => {
                 });
             }
         }
-        // 3. MovieBox (Port 7404)
+        // 3. MovieBox (Port 6104)
         else if (normalizedId === "moviebox") {
             headers = {
                 "Referer": "https://moviebox.ph/"
@@ -155,7 +155,7 @@ routerAdd("GET", "/api/modelles/source", (e) => {
             if (!/^[0-9]+$/.test(se)) se = "0";
             if (!/^[0-9]+$/.test(ep)) ep = "1";
 
-            let qUrl = "http://127.0.0.1:7404/play?season=" + encodeURIComponent(se + ":" + ep);
+            let qUrl = "http://127.0.0.1:6104/play?season=" + encodeURIComponent(se + ":" + ep);
             if (/^[0-9]+$/.test(contentId)) {
                 qUrl += "&subjectId=" + encodeURIComponent(contentId) + "&detailPath=";
             } else {
@@ -199,11 +199,11 @@ routerAdd("GET", "/api/modelles/source", (e) => {
                 });
             }
         }
-        // 4. Viu (Port 7405)
+        // 4. Viu (Port 6105)
         else if (normalizedId === "viu") {
             const apiKey = "912ursfh283fjefw8234u320t9uejf2983048290859032jfej";
             const res = $http.send({
-                url: "http://127.0.0.1:7405/api/drama-api/stream?id=" + encodeURIComponent(contentId) + "&episode_id=" + encodeURIComponent(episodeId) + "&provider=viu&api_key=" + apiKey,
+                url: "http://127.0.0.1:6105/api/drama-api/stream?id=" + encodeURIComponent(contentId) + "&episode_id=" + encodeURIComponent(episodeId) + "&provider=viu&api_key=" + apiKey,
                 headers: {
                     "Authorization": "Bearer " + apiKey
                 },
@@ -222,11 +222,11 @@ routerAdd("GET", "/api/modelles/source", (e) => {
             for (let i = 0; i < rawStreams.length; i++) {
                 let streamUrl = String(rawStreams[i].url || "");
                 
-                // Route all VIU stream URLs through Gateway (:8090) instead of exposing internal port 7405
-                if (streamUrl.indexOf("http://127.0.0.1:7405/vod/") === 0) {
-                    streamUrl = streamUrl.replace("http://127.0.0.1:7405/vod/", "http://" + gatewayHost + "/api/modelles/viu/");
-                } else if (streamUrl.indexOf("http://192.168.18.200:7405/vod/") === 0) {
-                    streamUrl = streamUrl.replace("http://192.168.18.200:7405/vod/", "http://" + gatewayHost + "/api/modelles/viu/");
+                // Route all VIU stream URLs through Gateway (:8090) instead of exposing internal port 6105
+                if (streamUrl.indexOf("http://127.0.0.1:6105/vod/") === 0) {
+                    streamUrl = streamUrl.replace("http://127.0.0.1:6105/vod/", "http://" + gatewayHost + "/api/modelles/viu/");
+                } else if (streamUrl.indexOf("http://192.168.18.200:6105/vod/") === 0) {
+                    streamUrl = streamUrl.replace("http://192.168.18.200:6105/vod/", "http://" + gatewayHost + "/api/modelles/viu/");
                 }
                 
                 streams.push({
@@ -246,10 +246,10 @@ routerAdd("GET", "/api/modelles/source", (e) => {
                 });
             }
         }
-        // 5. FreeReels (Port 7406)
+        // 5. FreeReels (Port 6106)
         else if (normalizedId === "freereels") {
             const res = $http.send({
-                url: "http://127.0.0.1:7406/detail?id=" + encodeURIComponent(contentId) + "&episode_id=" + encodeURIComponent(episodeId),
+                url: "http://127.0.0.1:6106/detail?id=" + encodeURIComponent(contentId) + "&episode_id=" + encodeURIComponent(episodeId),
                 method: "GET",
                 timeout: 15
             });
@@ -322,10 +322,10 @@ routerAdd("GET", "/api/modelles/source", (e) => {
                 }
             }
         }
-        // 6. iQIYI (Port 7407)
+        // 6. iQIYI (Port 6107)
         else if (normalizedId === "iqiyi") {
             const res = $http.send({
-                url: "http://127.0.0.1:7407/api/play/" + encodeURIComponent(episodeId),
+                url: "http://127.0.0.1:6107/api/play/" + encodeURIComponent(episodeId),
                 method: "GET",
                 timeout: 15
             });
@@ -339,7 +339,7 @@ routerAdd("GET", "/api/modelles/source", (e) => {
 
             for (let i = 0; i < rawStreams.length; i++) {
                 let u = String(rawStreams[i].url || "");
-                if (u.indexOf("/") === 0) u = "http://127.0.0.1:7407" + u;
+                if (u.indexOf("/") === 0) u = "http://127.0.0.1:6107" + u;
                 streams.push({
                     quality: String(rawStreams[i].quality || "Auto"),
                     format: String(rawStreams[i].format || "m3u8").toLowerCase(),
@@ -358,7 +358,7 @@ routerAdd("GET", "/api/modelles/source", (e) => {
                 });
             }
         }
-        // 7. CineFlow Hub Upstream (Port 7401 - 18 Provider)
+        // 7. CineFlow Hub Upstream (Port 6101 - 18 Provider)
         else {
             let effectiveEpisodeId = episodeId;
             let effectiveContentId = contentId;
@@ -384,7 +384,7 @@ routerAdd("GET", "/api/modelles/source", (e) => {
             }
 
             const res = $http.send({
-                url: "http://127.0.0.1:7401/api/modelles/source?model_id=" + encodeURIComponent(canonicalId) + "&id=" + encodeURIComponent(effectiveContentId) + "&episode_id=" + encodeURIComponent(effectiveEpisodeId),
+                url: "http://127.0.0.1:6101/api/modelles/source?model_id=" + encodeURIComponent(canonicalId) + "&id=" + encodeURIComponent(effectiveContentId) + "&episode_id=" + encodeURIComponent(effectiveEpisodeId),
                 method: "GET",
                 timeout: 15
             });

@@ -42,7 +42,7 @@ Edit `.env`:
 ```env
 IQIYI_USERNAME=your_phone_number_or_email
 IQIYI_PASSWORD=your_password
-SERVER_PORT=7407
+SERVER_PORT=6107
 SERVER_HOST=0.0.0.0
 ```
 
@@ -52,11 +52,11 @@ SERVER_HOST=0.0.0.0
 python production/run_server.py
 ```
 
-Server starts on `http://localhost:7407`
+Server starts on `http://localhost:6107`
 
 API documentation available at:
-- Swagger UI: `http://localhost:7407/docs`
-- ReDoc: `http://localhost:7407/redoc`
+- Swagger UI: `http://localhost:6107/docs`
+- ReDoc: `http://localhost:6107/redoc`
 
 ## API Endpoints
 

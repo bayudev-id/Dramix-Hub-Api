@@ -91,5 +91,5 @@ async def root():
     return StandardResponse[dict](
         code=200,
         message="iQIYI API v2.0.0",
-        data={"service": "iqiyi_api", "port": os.getenv("SERVER_PORT", 7407)}
+        data={"service": "iqiyi_api", "port": os.getenv("SERVER_PORT", 6107)}
     )

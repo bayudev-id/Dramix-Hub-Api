@@ -219,15 +219,14 @@ routerAdd("GET", "/api/modelles/source", (e) => {
             const rawSubs = Array.isArray(d.subtitles) ? d.subtitles : [];
 
             const gatewayHost = (e.request && e.request.host) || (info.headers && info.headers["host"]) || "127.0.0.1:8090";
+            const scheme = (info.headers && (info.headers["x-forwarded-proto"] || info.headers["X-Forwarded-Proto"])) || (gatewayHost.indexOf(":") === -1 ? "https" : "http");
+            const gatewayPrefix = scheme + "://" + gatewayHost + "/api/modelles/viu/";
+
             for (let i = 0; i < rawStreams.length; i++) {
                 let streamUrl = String(rawStreams[i].url || "");
                 
-                // Route all VIU stream URLs through Gateway (:8090) instead of exposing internal port 6105
-                if (streamUrl.indexOf("http://127.0.0.1:6105/vod/") === 0) {
-                    streamUrl = streamUrl.replace("http://127.0.0.1:6105/vod/", "http://" + gatewayHost + "/api/modelles/viu/");
-                } else if (streamUrl.indexOf("http://192.168.18.200:6105/vod/") === 0) {
-                    streamUrl = streamUrl.replace("http://192.168.18.200:6105/vod/", "http://" + gatewayHost + "/api/modelles/viu/");
-                }
+                // Route all VIU stream URLs through Gateway instead of exposing internal port 6105
+                streamUrl = streamUrl.replace(/^http:\/\/(?:127\.0\.0\.1|localhost|192\.168\.\d+\.\d+):6105\/vod\//, gatewayPrefix);
                 
                 streams.push({
                     quality: String(rawStreams[i].quality || "Auto"),

@@ -27,7 +27,7 @@ Semua perubahan pada **Dramix Hub API (Gateway)** dicatat dalam dokumen ini meng
 - **VIU HLS Manifest & AES-128 DRM Key Proxy (`pb_hooks/viu_proxy.pb.js`)**:
   - Proxy HLS playlist (`/api/modelles/viu/vuclip_vod.m3u8` dan `/api/modelles/viu/vuclip_airplay.m3u8`) melalui PocketBase port 8090.
   - Proxy AES-128 DRM key endpoint (`/api/modelles/viu/getkey`) dengan autentikasi internal API key terinjeksi di sisi gateway.
-  - Menulis ulang URI tag `#EXT-X-KEY` dalam playlist `.m3u8` secara dinamis ke host gateway client port 8090.
+  - Menulis ulang URI tag `#EXT-X-KEY` dalam playlist `.m3u8` secara dinamis ke host gateway client (mendukung HTTP lokal dan HTTPS Cloudflare Tunnel `X-Forwarded-Proto`).
 - **Production 1-Click Deployment Script (`deploy.sh`)**:
   - Skrip deploy otomatis untuk Mini PC di `/opt/dramix_gateway` dikelola oleh PM2.
   - Otomatis deteksi arsitektur CPU dan unduh binary Linux PocketBase v0.40.4 jika belum ada.

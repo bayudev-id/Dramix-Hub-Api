@@ -27,12 +27,14 @@ routerAdd("GET", "/api/modelles/viu/vuclip_vod.m3u8", (e) => {
         }
 
         const host = (e.request && e.request.host) || (info.headers && (info.headers["host"] || info.headers["Host"])) || "127.0.0.1:8090";
+        const scheme = (info.headers && (info.headers["x-forwarded-proto"] || info.headers["X-Forwarded-Proto"])) || (host.indexOf(":") === -1 ? "https" : "http");
+        const gatewayBase = scheme + "://" + host;
         let content = String(res.raw || "");
 
-        // Rewrite DRM key endpoint so ExoPlayer fetches AES key via Gateway (:8090)
-        content = content.replace(/http:\/\/127\.0\.0\.1:6105\/api\/appsdrm\/getkey/g, "http://" + host + "/api/modelles/viu/getkey");
-        content = content.replace(/https:\/\/prod-in\.viu\.com\/api\/appsdrm\/getkey/g, "http://" + host + "/api/modelles/viu/getkey");
-        content = content.replace(/http:\/\/192\.168\.18\.200:6105\/api\/appsdrm\/getkey/g, "http://" + host + "/api/modelles/viu/getkey");
+        // Rewrite DRM key endpoint so ExoPlayer fetches AES key via Gateway (:8090 / Cloudflare Tunnel)
+        content = content.replace(/http:\/\/127\.0\.0\.1:6105\/api\/appsdrm\/getkey/g, gatewayBase + "/api/modelles/viu/getkey");
+        content = content.replace(/https:\/\/prod-in\.viu\.com\/api\/appsdrm\/getkey/g, gatewayBase + "/api/modelles/viu/getkey");
+        content = content.replace(/http:\/\/(?:127\.0\.0\.1|localhost|192\.168\.\d+\.\d+):6105\/api\/appsdrm\/getkey/g, gatewayBase + "/api/modelles/viu/getkey");
 
         return e.blob(200, "application/vnd.apple.mpegurl", content);
     } catch (err) {
@@ -65,12 +67,14 @@ routerAdd("GET", "/api/modelles/viu/vuclip_airplay.m3u8", (e) => {
         }
 
         const host = (e.request && e.request.host) || (info.headers && (info.headers["host"] || info.headers["Host"])) || "127.0.0.1:8090";
+        const scheme = (info.headers && (info.headers["x-forwarded-proto"] || info.headers["X-Forwarded-Proto"])) || (host.indexOf(":") === -1 ? "https" : "http");
+        const gatewayBase = scheme + "://" + host;
         let content = String(res.raw || "");
 
-        // Rewrite DRM key endpoint so ExoPlayer fetches AES key via Gateway (:8090)
-        content = content.replace(/http:\/\/127\.0\.0\.1:6105\/api\/appsdrm\/getkey/g, "http://" + host + "/api/modelles/viu/getkey");
-        content = content.replace(/https:\/\/prod-in\.viu\.com\/api\/appsdrm\/getkey/g, "http://" + host + "/api/modelles/viu/getkey");
-        content = content.replace(/http:\/\/192\.168\.18\.200:6105\/api\/appsdrm\/getkey/g, "http://" + host + "/api/modelles/viu/getkey");
+        // Rewrite DRM key endpoint so ExoPlayer fetches AES key via Gateway (:8090 / Cloudflare Tunnel)
+        content = content.replace(/http:\/\/127\.0\.0\.1:6105\/api\/appsdrm\/getkey/g, gatewayBase + "/api/modelles/viu/getkey");
+        content = content.replace(/https:\/\/prod-in\.viu\.com\/api\/appsdrm\/getkey/g, gatewayBase + "/api/modelles/viu/getkey");
+        content = content.replace(/http:\/\/(?:127\.0\.0\.1|localhost|192\.168\.\d+\.\d+):6105\/api\/appsdrm\/getkey/g, gatewayBase + "/api/modelles/viu/getkey");
 
         return e.blob(200, "application/vnd.apple.mpegurl", content);
     } catch (err) {

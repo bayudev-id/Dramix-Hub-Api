@@ -36,47 +36,45 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
             
             const source = (providerSource || "").toLowerCase();
             
-            // WeTV: rewrite through image proxy for <15KB WebP thumbnails
-            if (source === "wetv" || url.indexOf("wetvinfo.com") !== -1) {
-                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
-            }
-            
-            // iQIYI: rewrite to image proxy
-            if (source === "iqiyi" || url.indexOf("iqiyipic.com") !== -1) {
-                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
-            }
-            
-            // Viu: rewrite to image proxy
-            if (source === "viu") {
-                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
-            }
-            
-            // MovieBox: resize + proxy for WebP conversion
+            // MovieBox: Alibaba Cloud OSS CDN - resize to 240px width + WebP format on edge (~10-15KB)
             if (source === "moviebox" || url.indexOf("pbcdnw.aoneroom.com") !== -1) {
-                let optimizedUrl = url;
-                if (url.indexOf("?") === -1) {
-                    optimizedUrl = url + "?x-oss-process=image/resize,w_360,m_lfit";
-                } else {
-                    optimizedUrl = url + "&x-oss-process=image/resize,w_360,m_lfit";
+                const cleanUrl = url.split("?")[0];
+                return cleanUrl + "?x-oss-process=image/resize,w_240,m_lfit/format,webp";
+            }
+            
+            // KissKH/TMDB: downscale backdrop/poster on TMDB edge (~12-16KB)
+            if (source === "kisskh" || url.indexOf("media.themoviedb.org") !== -1 || url.indexOf("image.tmdb.org") !== -1) {
+                if (url.indexOf("w1000_and_h563_face") !== -1) {
+                    return url.replace("w1000_and_h563_face", "w250_and_h141_face");
                 }
-                return "/api/modelles/image?url=" + encodeURIComponent(optimizedUrl) + "&w=150";
+                return url.replace(/w_\d+_and_h\d+/, "w300");
             }
             
-            // KissKH/TMDB: rewrite to image proxy
-            if (source === "kisskh" || url.indexOf("media.themoviedb.org") !== -1) {
-                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
+            // WeTV: Tencent Cloud CDN edge optimizer (imageMogr2) -> strict < 15KB WebP
+            if (source === "wetv" || url.indexOf("wetvinfo.com") !== -1) {
+                // Format 1: puui.wetvinfo.com (Tencent COS) -> downscale + WebP quality 80 (~6-8KB)
+                if (url.indexOf("puui.wetvinfo.com") !== -1) {
+                    let u = url.replace(/_\d+(\.\w+)$/, "_218304$1");
+                    const sep = (u.indexOf("?") === -1) ? "?" : "&";
+                    if (u.indexOf("imageMogr2") === -1) {
+                        u = u + sep + "imageMogr2/thumbnail/150x/format/webp/quality/80";
+                    }
+                    return u;
+                }
+                // Format 2: vcover-vt-pic (Tencent COS) -> switch to /0 + imageMogr2 WebP (~6-8KB)
+                if (url.indexOf("vcover-vt-pic") !== -1) {
+                    let u = url.replace(/\/\d+$/, "/0");
+                    const sep = (u.indexOf("?") === -1) ? "?" : "&";
+                    if (u.indexOf("imageMogr2") === -1) {
+                        u = u + sep + "imageMogr2/thumbnail/150x/format/webp/quality/80";
+                    }
+                    return u;
+                }
             }
             
-            // FreeReels: already ~430B, no optimization needed
-            if (source === "freereels") {
-                return url;
-            }
-            
-            // Default: rewrite through proxy for any remaining large covers
-            if (url.indexOf("http") === 0) {
-                return "/api/modelles/image?url=" + encodeURIComponent(url) + "&w=150";
-            }
-            
+            // FreeReels: already ~430B
+            // Viu: Hash-based CDN
+            // iQIYI: Already contains dimension tags in URL
             return url;
         };
 

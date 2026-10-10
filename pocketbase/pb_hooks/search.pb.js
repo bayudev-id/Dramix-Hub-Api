@@ -52,14 +52,47 @@ const handleSearch = (e) => {
             }
             
             // Convert HTTP → HTTPS for known CDNs
-            if (trimmed.startsWith("http://pic") && trimmed.includes("iqiyipic.com")) {
-                return trimmed.replace("http://", "https://");
+            let finalUrl = trimmed;
+            if (finalUrl.startsWith("http://pic") && finalUrl.includes("iqiyipic.com")) {
+                finalUrl = finalUrl.replace("http://", "https://");
             }
-            if (trimmed.startsWith("http://m.ykimg.com")) {
-                return trimmed.replace("http://", "https://");
+            if (finalUrl.startsWith("http://m.ykimg.com")) {
+                finalUrl = finalUrl.replace("http://", "https://");
             }
             
-            return trimmed;
+            // MovieBox: Alibaba Cloud OSS CDN
+            if (finalUrl.indexOf("pbcdnw.aoneroom.com") !== -1) {
+                const cleanUrl = finalUrl.split("?")[0];
+                return cleanUrl + "?x-oss-process=image/resize,w_240,m_lfit/format,webp";
+            }
+            // KissKH/TMDB
+            if (finalUrl.indexOf("media.themoviedb.org") !== -1 || finalUrl.indexOf("image.tmdb.org") !== -1) {
+                if (finalUrl.indexOf("w1000_and_h563_face") !== -1) {
+                    return finalUrl.replace("w1000_and_h563_face", "w250_and_h141_face");
+                }
+                return finalUrl.replace(/w_\d+_and_h\d+/, "w300");
+            }
+            // WeTV
+            if (finalUrl.indexOf("wetvinfo.com") !== -1) {
+                if (finalUrl.indexOf("puui.wetvinfo.com") !== -1) {
+                    let u = finalUrl.replace(/_\d+(\.\w+)$/, "_218304$1");
+                    const sep = (u.indexOf("?") === -1) ? "?" : "&";
+                    if (u.indexOf("imageMogr2") === -1) {
+                        u = u + sep + "imageMogr2/thumbnail/150x/format/webp/quality/80";
+                    }
+                    return u;
+                }
+                if (finalUrl.indexOf("vcover-vt-pic") !== -1) {
+                    return finalUrl.replace(/\/\d+$/, "/92");
+                }
+            }
+            // Viu: Akamai Image Manager on edge - resize to 200px width
+            if (finalUrl.indexOf("prod-images.viu.com") !== -1) {
+                const cleanUrl = finalUrl.split("?")[0];
+                return cleanUrl + "?im=Resize,width=200";
+            }
+            
+            return finalUrl;
         };
 
         const info = e.requestInfo();

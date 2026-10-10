@@ -67,8 +67,15 @@ routerAdd("GET", "/api/modelles/videos", (e) => {
                 }
             }
             
+            // Viu: Akamai Image Manager on edge - resize to 200px width (~6-18KB, avg 15.9KB, -96% bandwidth)
+            if (source === "viu" || url.indexOf("prod-images.viu.com") !== -1) {
+                if (url.indexOf("prod-images.viu.com") !== -1) {
+                    const cleanUrl = url.split("?")[0];
+                    return cleanUrl + "?im=Resize,width=200";
+                }
+            }
+            
             // FreeReels: already ~430B
-            // Viu: Hash-based CDN
             // iQIYI: Already contains dimension tags in URL
             return url;
         };

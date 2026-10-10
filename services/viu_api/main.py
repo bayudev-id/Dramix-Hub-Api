@@ -1207,7 +1207,7 @@ async def secret_dashboard(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    host = os.getenv("HOST", "0.0.0.0")
+    host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", 7405))
     reload = os.getenv("RELOAD", "false").lower() in ("true", "1", "t")
     uvicorn.run("main:app", host=host, port=port, reload=reload)

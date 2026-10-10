@@ -218,13 +218,15 @@ routerAdd("GET", "/api/modelles/source", (e) => {
             const rawStreams = Array.isArray(d.streams) ? d.streams : [];
             const rawSubs = Array.isArray(d.subtitles) ? d.subtitles : [];
 
+            const gatewayHost = (e.request && e.request.host) || (info.headers && info.headers["host"]) || "127.0.0.1:8090";
             for (let i = 0; i < rawStreams.length; i++) {
                 let streamUrl = String(rawStreams[i].url || "");
                 
-                // Rewrite localhost VIU service URLs untuk network accessibility
-                if (streamUrl.indexOf("http://127.0.0.1:7405") === 0) {
-                    // Replace dengan LAN IP gateway server (TODO: make configurable)
-                    streamUrl = streamUrl.replace("http://127.0.0.1:7405", "http://192.168.18.200:7405");
+                // Route all VIU stream URLs through Gateway (:8090) instead of exposing internal port 7405
+                if (streamUrl.indexOf("http://127.0.0.1:7405/vod/") === 0) {
+                    streamUrl = streamUrl.replace("http://127.0.0.1:7405/vod/", "http://" + gatewayHost + "/api/modelles/viu/");
+                } else if (streamUrl.indexOf("http://192.168.18.200:7405/vod/") === 0) {
+                    streamUrl = streamUrl.replace("http://192.168.18.200:7405/vod/", "http://" + gatewayHost + "/api/modelles/viu/");
                 }
                 
                 streams.push({

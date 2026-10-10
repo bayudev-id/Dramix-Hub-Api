@@ -7,6 +7,26 @@ Semua perubahan pada **Dramix Hub API (Gateway)** dicatat dalam dokumen ini meng
 ## [Unreleased]
 
 ### Added
+- **VIU HLS Manifest & AES-128 DRM Key Proxy (`pb_hooks/viu_proxy.pb.js`)**:
+  - Proxy HLS playlist (`/api/modelles/viu/vuclip_vod.m3u8` dan `/api/modelles/viu/vuclip_airplay.m3u8`) melalui PocketBase port 8090.
+  - Proxy AES-128 DRM key endpoint (`/api/modelles/viu/getkey`) dengan autentikasi internal API key terinjeksi di sisi gateway.
+  - Menulis ulang URI tag `#EXT-X-KEY` dalam playlist `.m3u8` secara dinamis ke host gateway client port 8090.
+- **Production 1-Click Deployment Script (`deploy.sh`)**:
+  - Skrip deploy otomatis untuk Mini PC di `/opt/dramix_gateway` dikelola oleh PM2.
+  - Otomatis deteksi arsitektur CPU dan unduh binary Linux PocketBase v0.40.4 jika belum ada.
+  - Konfigurasi isolasi firewall UFW (allow port 8090, block port 7401-7407 dari akses eksternal/LAN).
+
+### Security
+- **Strict Microservice Loopback Binding (127.0.0.1)**:
+  - Mengembalikan binding default service VIU (`services/viu_api/main.py`) ke `127.0.0.1`.
+  - Mengonfigurasi `ecosystem.config.js` agar seluruh microservice internal (`cineflow:7401`, `wetv:7402`, `kisskh:7403`, `moviebox:7404`, `viu:7405`, `freereels:7406`, `iqiyi:7407`) terisolasi di `HOST: 127.0.0.1`, dan hanya PocketBase Gateway yang membuka port `0.0.0.0:8090` ke LAN.
+
+### Fixed
+- **VIU Playback Failure on Android ExoPlayer**:
+  - Memperbaiki kegagalan pemutaran video VIU akibat stream URL sebelumnya mengarah langsung ke port 7405 yang tidak terbuka di LAN dan tidak memiliki otorisasi API key.
+  - Rewrite stream URLs pada `/api/modelles/source` (`pocketbase/pb_hooks/source.pb.js`) agar seluruh manifest dan key diakses via PocketBase port 8090.
+
+### Added
 - **Provider Priority Ordering di `/api/modelles/models`**: Menetapkan urutan prioritas resmi provider pada endpoint models dengan priority map di `pocketbase/pb_hooks/models.pb.js`:
   - Posisi 1-7: WeTV, MovieBox, VIU, KissKH, iQIYI, Youku, FreeReels
   - Provider sisanya diurutkan alfabetis

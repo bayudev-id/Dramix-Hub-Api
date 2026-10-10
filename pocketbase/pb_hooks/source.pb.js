@@ -224,7 +224,9 @@ routerAdd("GET", "/api/modelles/source", (e) => {
                 timeout: 15
             });
             if (res.statusCode !== 200) {
-                return jsonError(res.statusCode === 404 ? 404 : 502, "Gagal mengambil stream dari Viu service");
+                const errStatus = (res.statusCode === 404 || res.statusCode === 403) ? res.statusCode : 502;
+                const errMsg = (res.json && res.json.message) ? res.json.message : "Gagal mengambil stream dari Viu service";
+                return jsonError(errStatus, errMsg);
             }
 
             const d = (res.json && res.json.data) || res.json || {};

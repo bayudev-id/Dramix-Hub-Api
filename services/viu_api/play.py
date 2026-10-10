@@ -528,6 +528,25 @@ async def get_drama_stream_custom(
             headers=headers,
             timeout=10.0
         )
+        if detail_resp.status_code == 401:
+            logger.warning(f"[get_drama_stream_custom] Upstream 401 on /vod/detail for {episode_id}. Refreshing guest token...")
+            from token_manager import generate_guest_token
+            new_token = generate_guest_token()
+            if new_token:
+                headers["Authorization"] = f"Bearer {new_token}"
+                detail_resp = await client.get(
+                    f"{VIU_API_GATEWAY}/api/mobile",
+                    params={
+                        "r": "/vod/detail",
+                        "product_id": episode_id,
+                        "platform_flag_label": "web",
+                        "area_id": "1000",
+                        "language_flag_id": "8",
+                        "os_flag_id": "1"
+                    },
+                    headers=headers,
+                    timeout=10.0
+                )
         if detail_resp.status_code == 200:
             detail_json = detail_resp.json()
             current_product = detail_json.get("data", {}).get("current_product", {})
@@ -570,6 +589,19 @@ async def get_drama_stream_custom(
             headers=headers,
             timeout=10.0
         )
+        if resp.status_code == 401:
+            logger.warning("[get_drama_stream_custom] Upstream 401 on playback/distribute. Refreshing guest token and retrying...")
+            from token_manager import generate_guest_token
+            new_token = generate_guest_token()
+            if new_token:
+                headers["Authorization"] = f"Bearer {new_token}"
+                resp = await client.get(
+                    f"{VIU_API_GATEWAY}/api/playback/distribute",
+                    params=playback_params,
+                    headers=headers,
+                    timeout=10.0
+                )
+                logger.info(f"[get_drama_stream_custom] Retry playback/distribute after token refresh: status={resp.status_code}")
         if resp.status_code == 200:
             resp_json = resp.json()
 

@@ -14,6 +14,22 @@ VIU_API_GATEWAY = "https://api-gateway-global.viu.com"
 # Memory cache for active token
 _cached_token = None
 
+def is_valid_viu_token(token: str) -> bool:
+    """
+    Validates whether a token string is a genuine Viu auth token (JWT/JWE),
+    preventing internal API keys or garbage from polluting the token cache.
+    """
+    if not token or not isinstance(token, str):
+        return False
+    token = token.strip()
+    api_secret = os.getenv("API_SECRET_KEY", "").strip()
+    if api_secret and token == api_secret:
+        return False
+    if "912ursfh283fjefw8234u320t9uejf2983048290859032jfej" in token:
+        return False
+    # Viu auth tokens are compact JWTs/JWEs starting with eyJ and length > 50
+    return token.startswith("eyJ") and len(token) > 50
+
 def generate_guest_token() -> str:
     """
     Generates a brand new guest token from the Viu API Gateway synchronously.
@@ -59,10 +75,10 @@ def generate_guest_token() -> str:
 
 def load_token() -> str:
     """
-    Loads token from viu_session.json, generates a fresh guest token if missing, or falls back to .env
+    Loads token from viu_session.json, generates a fresh guest token if missing or invalid, or falls back to .env
     """
     global _cached_token
-    if _cached_token:
+    if _cached_token and is_valid_viu_token(_cached_token):
         return _cached_token
 
     # 1. Try reading from JSON session file
@@ -71,35 +87,39 @@ def load_token() -> str:
             with open(TOKEN_FILE, "r") as f:
                 data = json.load(f)
                 token = data.get("token")
-                if token:
+                if token and is_valid_viu_token(token):
                     _cached_token = token
                     logger.info("Loaded Viu token from viu_session.json cache.")
                     return token
+                elif token:
+                    logger.warning("Cached token in viu_session.json has invalid format. Discarding.")
         except Exception as e:
             logger.error(f"Error reading viu_session.json: {e}")
 
-    # 2. Automatically generate fresh guest token if cache is empty
-    logger.info("No cached token found in viu_session.json. Fetching new guest token...")
+    # 2. Automatically generate fresh guest token if cache is empty or invalid
+    logger.info("No valid cached token found in viu_session.json. Fetching new guest token...")
     token = generate_guest_token()
-    if token:
+    if token and is_valid_viu_token(token):
         return token
 
-
-    # 2. Fall back to .env
+    # 3. Fall back to .env
     token = os.getenv("VIU_FALLBACK_TOKEN")
-    if token:
+    if token and is_valid_viu_token(token):
         _cached_token = token
         logger.info("Loaded Viu token from .env fallback.")
         return token
 
-    logger.warning("No Viu token found in viu_session.json or .env!")
+    logger.warning("No valid Viu token found in viu_session.json or .env!")
     return ""
 
 def save_token(token: str):
     """
-    Saves new token to memory cache and viu_session.json
+    Saves new token to memory cache and viu_session.json with validation guard.
     """
     global _cached_token
+    if not is_valid_viu_token(token):
+        logger.warning(f"Rejected attempt to save invalid Viu token format: {token[:20] if token else None}")
+        return
     _cached_token = token
     try:
         with open(TOKEN_FILE, "w") as f:
@@ -243,22 +263,23 @@ def get_proxy_headers(request: Request) -> dict:
     active_token = None
     api_secret = os.getenv("API_SECRET_KEY", "").strip()
     if query_token and query_token.strip() not in ["", "undefined", "null"]:
-        active_token = query_token.strip()
-        # Jangan pelajari API_SECRET_KEY sebagai token VIU (itu kunci proteksi kita, bukan token Viu)
-        if active_token == api_secret:
+        token_candidate = query_token.strip()
+        # Jangan pelajari API_SECRET_KEY atau token tidak valid sebagai token VIU
+        if token_candidate == api_secret or not is_valid_viu_token(token_candidate):
             active_token = load_token()
-            logger.info("Query token sama dengan API_SECRET_KEY, pakai cached Viu token.")
+            logger.info("Query token sama dengan API_SECRET_KEY atau bukan format token Viu, pakai cached Viu token.")
         else:
+            active_token = token_candidate
             logger.info("Using token from query parameters.")
     elif clean_client_token:
-        # Abaikan Authorization Bearer yg isinya API_SECRET_KEY (dikirim frontend secureFetch)
-        if api_secret and clean_client_token == api_secret:
+        # Abaikan Authorization Bearer yg isinya API_SECRET_KEY atau bukan format token Viu
+        if (api_secret and clean_client_token == api_secret) or not is_valid_viu_token(clean_client_token):
             active_token = load_token()
-            logger.info("Header token sama dengan API_SECRET_KEY, pakai cached Viu token.")
+            logger.info("Header token sama dengan API_SECRET_KEY atau bukan format token Viu, pakai cached Viu token.")
         else:
             active_token = clean_client_token
-            # Auto-learn
-            if clean_client_token != load_token():
+            # Auto-learn hanya jika valid format token Viu
+            if is_valid_viu_token(clean_client_token) and clean_client_token != load_token():
                 logger.info("Auto-Learn: Intercepted a new token in client request headers. Updating cache.")
                 save_token(clean_client_token)
     else:
